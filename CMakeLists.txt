@@ -1,47 +1,47 @@
 cmake_minimum_required(VERSION 3.1.0)
 
-project(InfluxDBClient)
+project(influx-db-client)
 
 
 
-add_library(InfluxDBClient 
-	src/InfluxDBClient.cpp
+add_library(influx-db-client 
+	src/influx-db-client.cpp
 )
 
 include(GNUInstallDirs)
 
-set_target_properties(InfluxDBClient
+set_target_properties(influx-db-client
 	PROPERTIES
 	CMAKE_CXX_STANDARD 20
 	CMAKE_CXX_STANDARD_REQUIRED ON
 )
 
-target_include_directories(InfluxDBClient
+target_include_directories(influx-db-client
 	PUBLIC
 	"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
 	"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-install(TARGETS InfluxDBClient
-	EXPORT InfluxDBClientTargets
+install(TARGETS influx-db-client
+	EXPORT influx-db-clientTargets
 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-install(FILES include/InfluxDBClient.h DESTINATION include)
+install(FILES include/influx-db-client.h DESTINATION include)
 
-install(EXPORT InfluxDBClientTargets
-	FILE InfluxDBClientTargets.cmake
-	NAMESPACE InfluxDBClient::
-	DESTINATION share/InfluxDBClient
+install(EXPORT influx-db-clientTargets
+	FILE influx-db-clientTargets.cmake
+	NAMESPACE influx-db-client::
+	DESTINATION share/influx-db-client
 )
 
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/InfluxDBClient.cmake"
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/influx-db-client.cmake"
 	"include(CMakeFindDependencyMacro)\n"
-	"include(\"\${CMAKE_CURRENT_LIST_DIR}/InfluxDBClient.cmake\")\n"
+	"include(\"\${CMAKE_CURRENT_LIST_DIR}/influx-db-client.cmake\")\n"
 )
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/InfluxDBClient.cmake"
-	DESTINATION share/InfluxDBClient
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/influx-db-client.cmake"
+	DESTINATION share/influx-db-client
 )
