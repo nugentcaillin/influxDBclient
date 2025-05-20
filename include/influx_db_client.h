@@ -1,11 +1,14 @@
 #ifndef INFLUX_DB_H
 #define INFLUX_DB_H
 
+
+
 #include <vector>
 #include <map>
 #include <string>
 
-
+namespace InfluxDBClient
+{
 
 class InfluxDBPoint;
 class InfluxDBSchema;
@@ -59,6 +62,6 @@ class InfluxDBSchema
 	virtual bool verify(InfluxDBPoint point) = 0;
 }; 
 
-
+}
 
 #endif

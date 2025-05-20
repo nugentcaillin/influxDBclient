@@ -6,7 +6,7 @@ project(influx_db_client)
 include(GNUInstallDirs)
 
 add_library(influx_db_client 
-	influx_db_client.cpp
+	src/influx_db_client.cpp
 )
 
 
@@ -19,7 +19,7 @@ set_target_properties(influx_db_client
 
 target_include_directories(influx_db_client
 	PUBLIC
-	"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+	"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
 	"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
