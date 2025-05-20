@@ -30,7 +30,7 @@ install(TARGETS influx_db_client
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-install(FILES influx_db_client.h DESTINATION include)
+install(FILES include/influx_db_client.h DESTINATION include)
 
 
 
