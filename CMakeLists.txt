@@ -42,6 +42,6 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/influx-db-client-config.cmake"
 	"include(\"\${CMAKE_CURRENT_LIST_DIR}/influx-db-client-targets.cmake\")\n"
 )
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/influx-db-client.cmake-config"
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/influx-db-client-config.cmake"
 	DESTINATION share/influx-db-client
 )
