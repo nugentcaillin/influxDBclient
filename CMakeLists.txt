@@ -32,16 +32,16 @@ install(TARGETS influx-db-client
 install(FILES include/influx-db-client.h DESTINATION include)
 
 install(EXPORT influx-db-clientTargets
-	FILE influx-db-clientTargets.cmake
+	FILE influx-db-client-targets.cmake
 	NAMESPACE influx-db-client::
 	DESTINATION share/influx-db-client
 )
 
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/influx-db-client.cmake"
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/influx-db-client-config.cmake"
 	"include(CMakeFindDependencyMacro)\n"
-	"include(\"\${CMAKE_CURRENT_LIST_DIR}/influx-db-client.cmake\")\n"
+	"include(\"\${CMAKE_CURRENT_LIST_DIR}/influx-db-client-targets.cmake\")\n"
 )
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/influx-db-client.cmake"
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/influx-db-client.cmake-config"
 	DESTINATION share/influx-db-client
 )
