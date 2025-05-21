@@ -6,6 +6,9 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <spdlog/spdlog.h>
+#include <iostream>
+#include <spdlog/sinks/null_sink.h>
 
 namespace InfluxDB
 {
@@ -17,24 +20,49 @@ namespace client
 class InfluxDBClient 
 {
 private:
+	std::string _url;
 	std::string _token;
 	std::string _org;
 	int _batch_size;
+	std::shared_ptr<spdlog::logger> _logger;
 
 public:
 	
 	// user provided splogger
 	InfluxDBClient
-	( std::string& token
-	, std::string org
-	, int batch_size=1
+	( std::string& url
+	, std::string& token
+	, std::string& org
+	, int batch_size
+	, std::shared_ptr<spdlog::logger> logger
+	)
+	: _url(url)
+	, _token(token)
+	, _org(org)
+	, _batch_size(batch_size)
+	, _logger(std::move(logger))
+	{
+		// defensive check for logger, warn user and initialise null sink logger
+		if (_logger.get() == nullptr)
+		{
+			std::cerr << "WARNING: InfluxDB Client recieved null logger pointer, falling back to spdlog::null_logger_mt";
+			_logger = spdlog::null_logger_mt("fallback_null_logger");
+		}
 
-	) {
-		_token = token;
-		_org = org;
-		_batch_size = batch_size;
 	}
 
+	// no provided logger
+	InfluxDBClient
+	( std::string& url
+	, std::string& token
+	, std::string& org
+	, int batch_size
+	)
+	: InfluxDBClient(url, token, org, batch_size, spdlog::null_logger_mt("null_logger"))
+	{
+
+	}
+	
 	
 };
 
