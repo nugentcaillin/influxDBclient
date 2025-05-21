@@ -5,8 +5,11 @@ project(influx_db_client)
 
 include(GNUInstallDirs)
 
+
+find_package(spdlog CONFIG REQUIRED)
+
 add_library(influx_db_client 
-	src/influx_db_client.cpp
+	src/influxdb/client/InfluxDBClient.cpp
 )
 
 
@@ -30,7 +33,8 @@ install(TARGETS influx_db_client
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-install(FILES include/influx_db_client.h DESTINATION include)
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/influxdb" 
+	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/influxdb")
 
 
 

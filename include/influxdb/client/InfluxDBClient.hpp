@@ -7,7 +7,7 @@
 #include <map>
 #include <string>
 
-namespace InfluxDBClient
+namespace InfluxDB
 {
 
 class InfluxDBPoint;
