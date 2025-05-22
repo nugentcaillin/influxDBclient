@@ -23,7 +23,17 @@ InfluxDBClient::InfluxDBClient
 		std::cerr << "WARNING: InfluxDB Client recieved null logger pointer, falling back to spdlog::null_logger_mt";
 		_logger = spdlog::null_logger_mt("fallback_null_logger");
 	}
-	_logger->info("Influx db client initialised");
+	
+	// check for invalid bucket size
+	if (_batch_size < 1)
+	{
+		_logger->warn("Batch size of {} is invalid. changing to default of 5000", _batch_size);
+		_batch_size = 5000;
+	}
+
+	_logger->info("Influx db client initialised with batch size of {}", _batch_size);
+
+
 }
 
 
