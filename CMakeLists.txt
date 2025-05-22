@@ -8,8 +8,11 @@ include(GNUInstallDirs)
 
 find_package(spdlog CONFIG REQUIRED)
 
-add_library(influx_db_client 
-	src/influxdb/client/InfluxDBClient.cpp
+add_library(${PROJECT_NAME} STATIC)
+
+target_sources(${PROJECT_NAME}
+	PRIVATE
+		src/influxdbclient/client/InfluxDBClient.cpp
 )
 
 
@@ -20,11 +23,18 @@ set_target_properties(influx_db_client
 	CMAKE_CXX_STANDARD_REQUIRED ON
 )
 
-target_include_directories(influx_db_client
+target_link_libraries(influx_db_client PUBLIC spdlog::spdlog)
+
+target_include_directories(${PROJECT_NAME}
 	PUBLIC
 	"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
 	"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
+
+
+
+
+
 
 install(TARGETS influx_db_client
 	EXPORT influx_db_client_targets
@@ -33,8 +43,8 @@ install(TARGETS influx_db_client
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/influxdb" 
-	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/influxdb")
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/influxdbclient" 
+	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/influxdbclient")
 
 
 
@@ -52,3 +62,6 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/influx_db_client-config.cmake"
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/influx_db_client-config.cmake"
 	DESTINATION share/influx_db_client
 )
+
+
+

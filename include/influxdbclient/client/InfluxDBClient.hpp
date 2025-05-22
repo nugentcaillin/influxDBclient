@@ -10,7 +10,7 @@
 #include <iostream>
 #include <spdlog/sinks/null_sink.h>
 
-namespace InfluxDB
+namespace influxdbclient
 {
 
 
@@ -30,9 +30,9 @@ public:
 	
 	// user provided splogger
 	InfluxDBClient
-	( std::string& url
-	, std::string& token
-	, std::string& org
+	( const std::string& url
+	, const std::string& token
+	, const std::string& org
 	, int batch_size
 	, std::shared_ptr<spdlog::logger> logger
 	)
@@ -49,13 +49,15 @@ public:
 			_logger = spdlog::null_logger_mt("fallback_null_logger");
 		}
 
+		_logger->info("Influx db client initialised");
+
 	}
 
 	// no provided logger
 	InfluxDBClient
-	( std::string& url
-	, std::string& token
-	, std::string& org
+	( const std::string& url
+	, const std::string& token
+	, const std::string& org
 	, int batch_size
 	)
 	: InfluxDBClient(url, token, org, batch_size, spdlog::null_logger_mt("null_logger"))
