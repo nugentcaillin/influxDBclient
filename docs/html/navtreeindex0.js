@@ -1,0 +1,25 @@
+var NAVTREEINDEX0 =
+{
+"InfluxDBClient_8hpp_source.html":[2,0,0,0,0,0],
+"InfluxDBPoint_8hpp_source.html":[2,0,0,0,1,0],
+"InfluxDBSchema_8hpp_source.html":[2,0,0,0,1,1],
+"annotated.html":[1,0],
+"classInfluxDB_1_1data_1_1InfluxDBPoint.html":[1,0,0,0,0],
+"classInfluxDB_1_1data_1_1InfluxDBSchema.html":[1,0,0,0,1],
+"classes.html":[1,1],
+"classinfluxdbclient_1_1client_1_1InfluxDBClient.html":[1,0,1,0,0],
+"dir_2c95c88c23a2f81f10bfcd6dedd42d72.html":[2,0,0,0],
+"dir_2fa0fab0c5170cb3b7a7254b794dcabf.html":[2,0,0,0,0],
+"dir_d44c64559bbebec7f509842c48db8b23.html":[2,0,0],
+"dir_dc836a871414710b7cab98bfe9d64ef6.html":[2,0,0,0,1],
+"files.html":[2,0],
+"index.html":[],
+"index.html":[0],
+"index.html#autotoc_md1":[0,0],
+"index.html#autotoc_md2":[0,1],
+"index.html#autotoc_md3":[0,2],
+"index.html#autotoc_md4":[0,2,0],
+"index.html#autotoc_md5":[0,2,1],
+"influxdbclient_8hpp_source.html":[2,0,0,0,2],
+"pages.html":[]
+};

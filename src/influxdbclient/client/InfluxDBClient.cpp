@@ -26,6 +26,7 @@ InfluxDBClient::InfluxDBClient
 	_logger->info("Influx db client initialised");
 }
 
+
 // no provided logger
 InfluxDBClient::InfluxDBClient
 ( const std::string& url

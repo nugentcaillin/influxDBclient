@@ -1,0 +1,61 @@
+\doxysection{Influx\+DBClient.\+hpp}
+\hypertarget{InfluxDBClient_8hpp_source}{}\label{InfluxDBClient_8hpp_source}\index{/home/caillin/Documents/repos/influxDBclient/include/influxdbclient/client/InfluxDBClient.hpp@{/home/caillin/Documents/repos/influxDBclient/include/influxdbclient/client/InfluxDBClient.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{preprocessor}{\#ifndef\ INFLUX\_DB\_H}}
+\DoxyCodeLine{00002\ \textcolor{preprocessor}{\#define\ INFLUX\_DB\_H}}
+\DoxyCodeLine{00003\ }
+\DoxyCodeLine{00004\ }
+\DoxyCodeLine{00005\ }
+\DoxyCodeLine{00006\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00007\ \textcolor{preprocessor}{\#include\ <map>}}
+\DoxyCodeLine{00008\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00009\ \textcolor{preprocessor}{\#include\ <spdlog/spdlog.h>}}
+\DoxyCodeLine{00010\ \textcolor{preprocessor}{\#include\ <iostream>}}
+\DoxyCodeLine{00011\ \textcolor{preprocessor}{\#include\ <spdlog/sinks/null\_sink.h>}}
+\DoxyCodeLine{00012\ }
+\DoxyCodeLine{00013\ \textcolor{keyword}{namespace\ }influxdbclient}
+\DoxyCodeLine{00014\ \{}
+\DoxyCodeLine{00015\ }
+\DoxyCodeLine{00016\ }
+\DoxyCodeLine{00017\ \textcolor{keyword}{namespace\ }client}
+\DoxyCodeLine{00018\ \{}
+\DoxyCodeLine{00019\ }
+\DoxyCodeLine{00020\ \textcolor{keyword}{class\ }InfluxDBClient\ }
+\DoxyCodeLine{00021\ \{}
+\DoxyCodeLine{00022\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00023\ \ \ \ \ std::string\ \_url;}
+\DoxyCodeLine{00024\ \ \ \ \ std::string\ \_token;}
+\DoxyCodeLine{00025\ \ \ \ \ std::string\ \_org;}
+\DoxyCodeLine{00026\ \ \ \ \ \textcolor{keywordtype}{int}\ \_batch\_size;}
+\DoxyCodeLine{00027\ \ \ \ \ std::shared\_ptr<spdlog::logger>\ \_logger;}
+\DoxyCodeLine{00028\ }
+\DoxyCodeLine{00029\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00030\ \ \ \ \ }
+\DoxyCodeLine{00031\ \ \ \ \ \textcolor{comment}{//\ user\ provided\ splogger}}
+\DoxyCodeLine{00032\ \ \ \ \ InfluxDBClient}
+\DoxyCodeLine{00033\ \ \ \ \ (\ \textcolor{keyword}{const}\ std::string\&\ url}
+\DoxyCodeLine{00034\ \ \ \ \ ,\ \textcolor{keyword}{const}\ std::string\&\ token}
+\DoxyCodeLine{00035\ \ \ \ \ ,\ \textcolor{keyword}{const}\ std::string\&\ org}
+\DoxyCodeLine{00036\ \ \ \ \ ,\ \textcolor{keywordtype}{int}\ batch\_size}
+\DoxyCodeLine{00037\ \ \ \ \ ,\ std::shared\_ptr<spdlog::logger>\ logger}
+\DoxyCodeLine{00038\ \ \ \ \ );}
+\DoxyCodeLine{00039\ }
+\DoxyCodeLine{00040\ }
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{comment}{//\ no\ provided\ logger}}
+\DoxyCodeLine{00042\ \ \ \ \ InfluxDBClient}
+\DoxyCodeLine{00043\ \ \ \ \ (\ \textcolor{keyword}{const}\ std::string\&\ url}
+\DoxyCodeLine{00044\ \ \ \ \ ,\ \textcolor{keyword}{const}\ std::string\&\ token}
+\DoxyCodeLine{00045\ \ \ \ \ ,\ \textcolor{keyword}{const}\ std::string\&\ org}
+\DoxyCodeLine{00046\ \ \ \ \ ,\ \textcolor{keywordtype}{int}\ batch\_size}
+\DoxyCodeLine{00047\ \ \ \ \ );}
+\DoxyCodeLine{00048\ \ \ \ \ }
+\DoxyCodeLine{00049\ \ \ \ \ }
+\DoxyCodeLine{00050\ \};}
+\DoxyCodeLine{00051\ }
+\DoxyCodeLine{00052\ \}}
+\DoxyCodeLine{00053\ \}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}
