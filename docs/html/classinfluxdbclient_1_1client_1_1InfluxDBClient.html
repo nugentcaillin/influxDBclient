@@ -111,13 +111,106 @@ $(function(){initNavTree('classinfluxdbclient_1_1client_1_1InfluxDBClient.html',
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a0d50dac254fac2df679ef9b49d1c940a" id="r_a0d50dac254fac2df679ef9b49d1c940a"><td class="memItemLeft" align="right" valign="top"><a id="a0d50dac254fac2df679ef9b49d1c940a" name="a0d50dac254fac2df679ef9b49d1c940a"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>InfluxDBClient</b> (const std::string &amp;url, const std::string &amp;token, const std::string &amp;org, int batch_size, std::shared_ptr&lt; spdlog::logger &gt; logger)</td></tr>
-<tr class="separator:a0d50dac254fac2df679ef9b49d1c940a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a137f3b89653bde0bac45bd5d465dd72b" id="r_a137f3b89653bde0bac45bd5d465dd72b"><td class="memItemLeft" align="right" valign="top"><a id="a137f3b89653bde0bac45bd5d465dd72b" name="a137f3b89653bde0bac45bd5d465dd72b"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>InfluxDBClient</b> (const std::string &amp;url, const std::string &amp;token, const std::string &amp;org, int batch_size)</td></tr>
-<tr class="separator:a137f3b89653bde0bac45bd5d465dd72b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9050272823bca68570ed0c78463dcf0" id="r_af9050272823bca68570ed0c78463dcf0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af9050272823bca68570ed0c78463dcf0">InfluxDBClient</a> (const std::string &amp;url, const std::string &amp;org, const std::string &amp;token, int batch_size, std::shared_ptr&lt; spdlog::logger &gt; logger)</td></tr>
+<tr class="memdesc:af9050272823bca68570ed0c78463dcf0"><td class="mdescLeft">&#160;</td><td class="mdescRight">constructs an <a class="el" href="classinfluxdbclient_1_1client_1_1InfluxDBClient.html">InfluxDBClient</a> using a specified logger and batch size  <br /></td></tr>
+<tr class="separator:af9050272823bca68570ed0c78463dcf0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee8e08071404a0525b79c0044e3416a3" id="r_aee8e08071404a0525b79c0044e3416a3"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aee8e08071404a0525b79c0044e3416a3">InfluxDBClient</a> (const std::string &amp;url, const std::string &amp;org, const std::string &amp;token, int batch_size)</td></tr>
+<tr class="memdesc:aee8e08071404a0525b79c0044e3416a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">constructs an <a class="el" href="classinfluxdbclient_1_1client_1_1InfluxDBClient.html">InfluxDBClient</a> with a default null logger  <br /></td></tr>
+<tr class="separator:aee8e08071404a0525b79c0044e3416a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="af9050272823bca68570ed0c78463dcf0" name="af9050272823bca68570ed0c78463dcf0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af9050272823bca68570ed0c78463dcf0">&#9670;&#160;</a></span>InfluxDBClient() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">influxdbclient::client::InfluxDBClient::InfluxDBClient </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>url</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>org</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>token</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>batch_size</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::shared_ptr&lt; spdlog::logger &gt;</td>          <td class="paramname"><span class="paramname"><em>logger</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>constructs an <a class="el" href="classinfluxdbclient_1_1client_1_1InfluxDBClient.html">InfluxDBClient</a> using a specified logger and batch size </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">url</td><td>the InfluxDB url (e.g. <a href="http://localhost:8086">http://localhost:8086</a>) </td></tr>
+    <tr><td class="paramname">org</td><td>the InfluxDB organisation name </td></tr>
+    <tr><td class="paramname">token</td><td>the InfluxDB API token </td></tr>
+    <tr><td class="paramname">logger</td><td>a shared pointer to the spd logger to use for logging </td></tr>
+    <tr><td class="paramname">batch_size</td><td>the number of data points to buffer before writing to the database </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aee8e08071404a0525b79c0044e3416a3" name="aee8e08071404a0525b79c0044e3416a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aee8e08071404a0525b79c0044e3416a3">&#9670;&#160;</a></span>InfluxDBClient() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">influxdbclient::client::InfluxDBClient::InfluxDBClient </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>url</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>org</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>token</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>batch_size</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>constructs an <a class="el" href="classinfluxdbclient_1_1client_1_1InfluxDBClient.html">InfluxDBClient</a> with a default null logger </p>
+<p>constructs an <a class="el" href="classinfluxdbclient_1_1client_1_1InfluxDBClient.html">InfluxDBClient</a> using a specified logger and batch size   </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">url</td><td>the InfluxDB url (e.g. <a href="http://localhost:8086">http://localhost:8086</a>) </td></tr>
+    <tr><td class="paramname">org</td><td>the InfluxDB organisation name </td></tr>
+    <tr><td class="paramname">token</td><td>the InfluxDB API token </td></tr>
+    <tr><td class="paramname">logger</td><td>a shared pointer to the spd logger to use for logging </td></tr>
+    <tr><td class="paramname">batch_size</td><td>the number of data points to buffer before writing to the database    </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>/home/caillin/Documents/repos/influxDBclient/include/influxdbclient/client/<a class="el" href="InfluxDBClient_8hpp_source.html">InfluxDBClient.hpp</a></li>
 <li>/home/caillin/Documents/repos/influxDBclient/src/influxdbclient/client/<b>InfluxDBClient.cpp</b></li>

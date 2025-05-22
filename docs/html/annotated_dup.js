@@ -8,7 +8,7 @@ var annotated_dup =
     ] ],
     [ "influxdbclient", null, [
       [ "client", null, [
-        [ "InfluxDBClient", "classinfluxdbclient_1_1client_1_1InfluxDBClient.html", null ]
+        [ "InfluxDBClient", "classinfluxdbclient_1_1client_1_1InfluxDBClient.html", "classinfluxdbclient_1_1client_1_1InfluxDBClient" ]
       ] ]
     ] ]
 ];

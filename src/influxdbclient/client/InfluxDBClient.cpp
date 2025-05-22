@@ -6,8 +6,8 @@ namespace client
 
 InfluxDBClient::InfluxDBClient
 ( const std::string& url
-, const std::string& token
 , const std::string& org
+, const std::string& token
 , int batch_size
 , std::shared_ptr<spdlog::logger> logger
 )
@@ -30,13 +30,31 @@ InfluxDBClient::InfluxDBClient
 // no provided logger
 InfluxDBClient::InfluxDBClient
 ( const std::string& url
-, const std::string& token
 , const std::string& org
+, const std::string& token
 , int batch_size
 )
 : InfluxDBClient(url, token, org, batch_size, spdlog::null_logger_mt("null_logger"))
 {}
 
+// no provided batch size
+InfluxDBClient::InfluxDBClient
+( const std::string& url
+, const std::string& org
+, const std::string& token
+, std::shared_ptr<spdlog::logger> logger
+)
+: InfluxDBClient(url, token, org, 5000, logger)
+{}
+
+// no provided logger or batch size
+InfluxDBClient::InfluxDBClient
+( const std::string& url
+, const std::string& org
+, const std::string& token
+)
+: InfluxDBClient(url, token, org, 5000, spdlog::null_logger_mt("null_logger"))
+{}
 
 }
 

@@ -3,12 +3,61 @@
 \doxysubsubsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\Hypertarget{classinfluxdbclient_1_1client_1_1InfluxDBClient_a0d50dac254fac2df679ef9b49d1c940a}\label{classinfluxdbclient_1_1client_1_1InfluxDBClient_a0d50dac254fac2df679ef9b49d1c940a} 
-{\bfseries Influx\+DBClient} (const std\+::string \&url, const std\+::string \&token, const std\+::string \&org, int batch\+\_\+size, std\+::shared\+\_\+ptr$<$ spdlog\+::logger $>$ logger)
-\item 
-\Hypertarget{classinfluxdbclient_1_1client_1_1InfluxDBClient_a137f3b89653bde0bac45bd5d465dd72b}\label{classinfluxdbclient_1_1client_1_1InfluxDBClient_a137f3b89653bde0bac45bd5d465dd72b} 
-{\bfseries Influx\+DBClient} (const std\+::string \&url, const std\+::string \&token, const std\+::string \&org, int batch\+\_\+size)
-\end{DoxyCompactItemize}
+\mbox{\hyperlink{classinfluxdbclient_1_1client_1_1InfluxDBClient_af9050272823bca68570ed0c78463dcf0}{Influx\+DBClient}} (const std\+::string \&url, const std\+::string \&org, const std\+::string \&token, int batch\+\_\+size, std\+::shared\+\_\+ptr$<$ spdlog\+::logger $>$ logger)
+\begin{DoxyCompactList}\small\item\em constructs an \doxylink{classinfluxdbclient_1_1client_1_1InfluxDBClient}{Influx\+DBClient} using a specified logger and batch size \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classinfluxdbclient_1_1client_1_1InfluxDBClient_aee8e08071404a0525b79c0044e3416a3}{Influx\+DBClient}} (const std\+::string \&url, const std\+::string \&org, const std\+::string \&token, int batch\+\_\+size)
+\begin{DoxyCompactList}\small\item\em constructs an \doxylink{classinfluxdbclient_1_1client_1_1InfluxDBClient}{Influx\+DBClient} with a default null logger \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{classinfluxdbclient_1_1client_1_1InfluxDBClient_af9050272823bca68570ed0c78463dcf0}\index{influxdbclient::client::InfluxDBClient@{influxdbclient::client::InfluxDBClient}!InfluxDBClient@{InfluxDBClient}}
+\index{InfluxDBClient@{InfluxDBClient}!influxdbclient::client::InfluxDBClient@{influxdbclient::client::InfluxDBClient}}
+\doxysubsubsection{\texorpdfstring{InfluxDBClient()}{InfluxDBClient()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily \label{classinfluxdbclient_1_1client_1_1InfluxDBClient_af9050272823bca68570ed0c78463dcf0} 
+influxdbclient\+::client\+::\+Influx\+DBClient\+::\+Influx\+DBClient (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{url}{, }\item[{const std\+::string \&}]{org}{, }\item[{const std\+::string \&}]{token}{, }\item[{int}]{batch\+\_\+size}{, }\item[{std\+::shared\+\_\+ptr$<$ spdlog\+::logger $>$}]{logger}{}\end{DoxyParamCaption})}
+
+
+
+constructs an \doxylink{classinfluxdbclient_1_1client_1_1InfluxDBClient}{Influx\+DBClient} using a specified logger and batch size 
+
+
+\begin{DoxyParams}{Parameters}
+{\em url} & the Influx\+DB url (e.\+g. \href{http://localhost:8086}{\texttt{ http\+://localhost\+:8086}}) \\
+\hline
+{\em org} & the Influx\+DB organisation name \\
+\hline
+{\em token} & the Influx\+DB API token \\
+\hline
+{\em logger} & a shared pointer to the spd logger to use for logging \\
+\hline
+{\em batch\+\_\+size} & the number of data points to buffer before writing to the database \\
+\hline
+\end{DoxyParams}
+\Hypertarget{classinfluxdbclient_1_1client_1_1InfluxDBClient_aee8e08071404a0525b79c0044e3416a3}\index{influxdbclient::client::InfluxDBClient@{influxdbclient::client::InfluxDBClient}!InfluxDBClient@{InfluxDBClient}}
+\index{InfluxDBClient@{InfluxDBClient}!influxdbclient::client::InfluxDBClient@{influxdbclient::client::InfluxDBClient}}
+\doxysubsubsection{\texorpdfstring{InfluxDBClient()}{InfluxDBClient()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily \label{classinfluxdbclient_1_1client_1_1InfluxDBClient_aee8e08071404a0525b79c0044e3416a3} 
+influxdbclient\+::client\+::\+Influx\+DBClient\+::\+Influx\+DBClient (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{url}{, }\item[{const std\+::string \&}]{org}{, }\item[{const std\+::string \&}]{token}{, }\item[{int}]{batch\+\_\+size}{}\end{DoxyParamCaption})}
+
+
+
+constructs an \doxylink{classinfluxdbclient_1_1client_1_1InfluxDBClient}{Influx\+DBClient} with a default null logger 
+
+constructs an \doxylink{classinfluxdbclient_1_1client_1_1InfluxDBClient}{Influx\+DBClient} using a specified logger and batch size   
+
+
+\begin{DoxyParams}{Parameters}
+{\em url} & the Influx\+DB url (e.\+g. \href{http://localhost:8086}{\texttt{ http\+://localhost\+:8086}}) \\
+\hline
+{\em org} & the Influx\+DB organisation name \\
+\hline
+{\em token} & the Influx\+DB API token \\
+\hline
+{\em logger} & a shared pointer to the spd logger to use for logging \\
+\hline
+{\em batch\+\_\+size} & the number of data points to buffer before writing to the database    \\
+\hline
+\end{DoxyParams}
 
 
 The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
