@@ -27,7 +27,6 @@ private:
 	std::shared_ptr<spdlog::logger> _logger;
 
 public:
-	
 	/**
 	 * @brief constructs an InfluxDBClient using a specified logger and batch size
 	 *
