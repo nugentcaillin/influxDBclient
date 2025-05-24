@@ -36,7 +36,7 @@ InfluxDBClient::InfluxDBClient
 	// defensive check for logger, warn user and initialise as global or null sink logger
 	if (_logger.get() == nullptr)
 	{
-		std::cerr << "WARNING: InfluxDB Client recieved null logger pointer, falling back to global logger or null logger";
+		std::cerr << "WARNING: InfluxDB Client recieved null logger pointer, falling back to global logger or null logger\n";
 		_logger = getOrCreateGlobalLogger();
 	}
 	
