@@ -10,16 +10,18 @@ namespace influxdbclient
 {
 namespace networking
 {
+
+int CurlGlobalInitializer::_ref_count = 0;
+std::mutex CurlGlobalInitializer::_mutex;
+
+
 CurlGlobalInitializer::CurlGlobalInitializer()
 {
 	std::lock_guard<std::mutex> lock(_mutex);
 	if (_ref_count++ == 0)
 	{
 		// attempt to get global logger, otherwise null sink
-		if (_logger.get() == nullptr)
-		{
-			_logger = spdlog::get("influx_db_client_global_logger");
-		}
+		_logger = spdlog::get("influx_db_client_global_logger");
 		if (_logger.get() == nullptr)
 		{
 			_logger = spdlog::null_logger_mt("influx_db_client_global_logger");

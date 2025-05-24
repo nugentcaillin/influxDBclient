@@ -14,6 +14,10 @@ namespace networking
 // called exactly once
 class CurlGlobalInitializer
 {
+private:
+	static int _ref_count;
+	static std::mutex _mutex;
+	static std::shared_ptr<spdlog::logger> _logger; 
 public:
 	CurlGlobalInitializer();
 	~CurlGlobalInitializer();
@@ -21,10 +25,6 @@ public:
 	// disable copy, assignment
 	CurlGlobalInitializer(const CurlGlobalInitializer&) = delete;
 	CurlGlobalInitializer& operator=(const CurlGlobalInitializer&) = delete;
-private:
-	static int _ref_count;
-	static std::mutex _mutex;
-	static std::shared_ptr<spdlog::logger> _logger; 
 
 };
 
