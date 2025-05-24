@@ -17,11 +17,15 @@ InfluxDBClient::InfluxDBClient
 , _batch_size(batch_size)
 , _logger(std::move(logger))
 {
-	// defensive check for logger, warn user and initialise null sink logger
+	// defensive check for logger, warn user and initialise as global or null sink logger
 	if (_logger.get() == nullptr)
 	{
-		std::cerr << "WARNING: InfluxDB Client recieved null logger pointer, falling back to spdlog::null_logger_mt";
-		_logger = spdlog::null_logger_mt("fallback_null_logger");
+		std::cerr << "WARNING: InfluxDB Client recieved null logger pointer, falling back to global logger or null logger";
+		_logger = spdlog::get("influx_db_client_global_logger");
+	}
+	if (_logger.get() == nullptr)
+	{
+		_logger = spdlog::null_logger_mt("influx_db_client_global_logger");
 	}
 	
 	// check for invalid bucket size

@@ -7,12 +7,15 @@ include(GNUInstallDirs)
 
 
 find_package(spdlog CONFIG REQUIRED)
+find_package(CURL CONFIG REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC)
 
 target_sources(${PROJECT_NAME}
 	PRIVATE
 		src/influxdbclient/client/InfluxDBClient.cpp
+		src/influxdbclient/networking/curl_global_initializer.cpp
+		src/influxdbclient/networking/LibcurlHttpClient.cpp
 )
 
 
@@ -23,7 +26,11 @@ set_target_properties(influx_db_client
 	CMAKE_CXX_STANDARD_REQUIRED ON
 )
 
-target_link_libraries(influx_db_client PUBLIC spdlog::spdlog)
+target_link_libraries(influx_db_client 
+	PUBLIC 
+		spdlog::spdlog
+		CURL::libcurl
+)
 
 target_include_directories(${PROJECT_NAME}
 	PUBLIC

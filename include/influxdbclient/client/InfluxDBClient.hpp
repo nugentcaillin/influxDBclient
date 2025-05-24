@@ -9,6 +9,7 @@
 #include <spdlog/spdlog.h>
 #include <iostream>
 #include <spdlog/sinks/null_sink.h>
+#include <memory>
 
 namespace influxdbclient
 {
