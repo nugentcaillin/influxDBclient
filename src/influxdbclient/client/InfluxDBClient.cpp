@@ -60,7 +60,7 @@ InfluxDBClient::InfluxDBClient
 , const std::string& token
 , int batch_size
 )
-: InfluxDBClient(url, token, org, batch_size, spdlog::null_logger_mt("null_logger"))
+: InfluxDBClient(url, token, org, batch_size, getOrCreateGlobalLogger)
 {}
 
 // no provided batch size
@@ -79,7 +79,7 @@ InfluxDBClient::InfluxDBClient
 , const std::string& org
 , const std::string& token
 )
-: InfluxDBClient(url, token, org, 5000, spdlog::null_logger_mt("null_logger"))
+: InfluxDBClient(url, token, org, 5000, getOrCreateGlobalLogger)
 {}
 
 }
