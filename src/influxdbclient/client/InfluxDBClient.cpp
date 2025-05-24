@@ -4,6 +4,22 @@ namespace influxdbclient
 namespace client
 {
 
+#define DEFAULT_LOGGER spdlog::null_logger_mt("influx_db_client_global_logger")
+
+std::shared_ptr<spdlog::logger>
+getOrCreateGlobalLogger()
+{
+	auto logger = spdlog::get("influx_db_client_global_logger");
+	if (logger.get() == nullptr)
+	{
+		logger = DEFAULT_LOGGER;
+	}
+	return logger;
+}
+
+
+
+
 InfluxDBClient::InfluxDBClient
 ( const std::string& url
 , const std::string& org
@@ -21,11 +37,7 @@ InfluxDBClient::InfluxDBClient
 	if (_logger.get() == nullptr)
 	{
 		std::cerr << "WARNING: InfluxDB Client recieved null logger pointer, falling back to global logger or null logger";
-		_logger = spdlog::get("influx_db_client_global_logger");
-	}
-	if (_logger.get() == nullptr)
-	{
-		_logger = spdlog::null_logger_mt("influx_db_client_global_logger");
+		_logger = getOrCreateGlobalLogger();
 	}
 	
 	// check for invalid bucket size
