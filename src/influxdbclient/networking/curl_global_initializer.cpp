@@ -13,6 +13,7 @@ namespace networking
 
 int CurlGlobalInitializer::_ref_count = 0;
 std::mutex CurlGlobalInitializer::_mutex;
+std::shared_ptr<spdlog::logger> _logger;
 
 
 CurlGlobalInitializer::CurlGlobalInitializer()
