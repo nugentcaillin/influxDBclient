@@ -7,7 +7,9 @@ namespace influxdbclient
 namespace networking
 {
 
-static CurlGlobalInitializer curlGlobalInitializer; 
+static CurlGlobalInitializer curlGlobalInitializer;
+
+LibcurlHttpClient::~LibcurlHttpClient() = default;
 
 HttpResponse LibcurlHttpClient::post(const std::string& url, const std::string& body, const std::map<std::string, std::string>)
 {
