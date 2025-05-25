@@ -27,6 +27,7 @@ CurlGlobalInitializer::CurlGlobalInitializer()
 		{
 			std::runtime_error(std::string(curl_easy_strerror(res)));
 		}
+		std::cout << "curl_global_init called" << std::endl;
 	}
 }
 
@@ -36,6 +37,7 @@ CurlGlobalInitializer::~CurlGlobalInitializer()
 	if (--_ref_count == 0)
 	{
 		curl_global_cleanup();
+		std::cout << "curl_global_cleanup called" << std::endl;
 	}
 }
 

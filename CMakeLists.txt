@@ -20,6 +20,7 @@ target_sources(${PROJECT_NAME}
 		src/influxdbclient/client/InfluxDBClient.cpp
 		src/influxdbclient/networking/curl_global_initializer.cpp
 		src/influxdbclient/networking/LibcurlHttpClient.cpp
+		src/influxdbclient/networking/CurlAsyncExecutor.cpp
 )
 
 

@@ -16,6 +16,7 @@ class LibcurlHttpClient : public IHttpClient
 public:
 
 	~LibcurlHttpClient() override;
+	LibcurlHttpClient();
 
 	HttpResponse post(const std::string& url, const std::string& body, const std::map<std::string, std::string>) override;
 	HttpResponse get(const std::string& url, const std::string& body, const std::map<std::string, std::string>) override;

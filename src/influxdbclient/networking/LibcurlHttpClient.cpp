@@ -1,4 +1,5 @@
 #include "influxdbclient/networking/libcurl_http_client.hpp"
+#include "influxdbclient/networking/curl_async_executor.hpp"
 
 #include "curl_global_initializer.hpp"
 
@@ -10,6 +11,10 @@ namespace networking
 static CurlGlobalInitializer curlGlobalInitializer;
 
 LibcurlHttpClient::~LibcurlHttpClient() = default;
+
+LibcurlHttpClient::LibcurlHttpClient()
+{
+}
 
 HttpResponse LibcurlHttpClient::post(const std::string& url, const std::string& body, const std::map<std::string, std::string>)
 {
