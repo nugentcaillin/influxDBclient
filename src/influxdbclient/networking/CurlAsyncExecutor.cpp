@@ -51,26 +51,66 @@ void CurlAsyncExecutor::submit_handle(CURL *handle)
 void CurlAsyncExecutor::run()
 {
 	std::cout << "Event loop started, size: " << _handle_queue.size() << std::endl;
+	int still_running;
+	int msgs_in_queue;
+	CURLMcode mc;
+	CURLMsg *msg;
 
 	while (_running)
 	{
 		{
-			std::cout << "waiting for request or end" << std::endl;
-			// wait until queue has items or 
+			std::cout << "blocking until requests queued, requests done or not running" << std::endl;
 			std::unique_lock<std::mutex> lock(_mutex);
-			_action_cv.wait(lock, [this] {
+			// if no requests pending, wait until new request or interrupt
+			_action_cv.wait_for(lock, std::chrono::milliseconds(100), [this] {
 				return !_running || !_handle_queue.empty();
 			});
 
 			if (!_running) break;
 
-			std::cout << "handling queue items" << std::endl;
+			if (!_handle_queue.empty()) std::cout << "handling queue items" << std::endl;
+			
 
+			// add new handles
 			while (!_handle_queue.empty())
 			{
 				auto curr = _handle_queue.front();
 				_handle_queue.pop();
-				curl_easy_cleanup(curr);
+				curl_multi_add_handle(_multi_handle, curr);
+			}
+		}
+		std::cout << "done blocking, dealing with transfers" << std::endl;
+
+		// perform transfers
+		mc = curl_multi_perform(_multi_handle, &still_running);
+		if (mc != CURLM_OK)
+		{
+			std::cout << "error in curl_multi_perform(): " << curl_multi_strerror(mc) << std::endl;
+		}
+
+		// deal with completed transfers
+		while (msg = curl_multi_info_read(_multi_handle, &msgs_in_queue))
+		{
+			if (msg->msg == CURLMSG_DONE)
+			{
+				if (msg->data.result == CURLE_OK)
+				{
+					long response_code;
+					curl_easy_getinfo(msg->easy_handle, CURLINFO_RESPONSE_CODE, &response_code);
+					std::cout << "transfer done with code: " << response_code << std::endl;
+
+					// look up easy handle in map, pass to worker thread
+
+					curl_multi_remove_handle(_multi_handle, msg->easy_handle);
+					curl_easy_cleanup(msg->easy_handle); // remove after implementing coroutines
+				} else 
+				{
+					std::cout << "transfer completed with error: " << curl_easy_strerror(msg->data.result) << std::endl;
+				}
+			}
+			else 
+			{
+				std::cout << "other event on message" << std::endl;
 			}
 		}
 
