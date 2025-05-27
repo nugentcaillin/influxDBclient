@@ -53,16 +53,31 @@ void CurlAsyncExecutor::run()
 	std::cout << "Event loop started, size: " << _handle_queue.size() << std::endl;
 	int still_running;
 	int msgs_in_queue;
+	int total_msgs = 0;
+	std::chrono::milliseconds timeout;
 	CURLMcode mc;
 	CURLMsg *msg;
 
 	while (_running)
 	{
 		{
-			std::cout << "blocking until requests queued, requests done or not running" << std::endl;
+			// if no requests, set timeout to max, otherwise curl's suggested timeout or default
+
+			if (total_msgs != 0)
+			{
+				long timeout_long;
+				curl_multi_timeout(_multi_handle, &timeout_long);
+				if (timeout_long == -1) timeout_long = 50;
+				timeout = std::chrono::milliseconds(timeout_long);
+			} else 
+			{
+				timeout = std::chrono::minutes(10); // not using std::chrono::milliseconds::max due to overflow
+			}
+
+			std::cout << "blocking until requests queued, requests done or not running with timeout of: " << timeout.count() << " and " << total_msgs << "messages" << std::endl;
 			std::unique_lock<std::mutex> lock(_mutex);
 			// if no requests pending, wait until new request or interrupt
-			_action_cv.wait_for(lock, std::chrono::milliseconds(100), [this] {
+			_action_cv.wait_for(lock, timeout, [this] {
 				return !_running || !_handle_queue.empty();
 			});
 
@@ -77,6 +92,7 @@ void CurlAsyncExecutor::run()
 				auto curr = _handle_queue.front();
 				_handle_queue.pop();
 				curl_multi_add_handle(_multi_handle, curr);
+				total_msgs++;
 			}
 		}
 		std::cout << "done blocking, dealing with transfers" << std::endl;
@@ -93,6 +109,7 @@ void CurlAsyncExecutor::run()
 		{
 			if (msg->msg == CURLMSG_DONE)
 			{
+				total_msgs--;
 				if (msg->data.result == CURLE_OK)
 				{
 					long response_code;
@@ -106,6 +123,8 @@ void CurlAsyncExecutor::run()
 				} else 
 				{
 					std::cout << "transfer completed with error: " << curl_easy_strerror(msg->data.result) << std::endl;
+					curl_multi_remove_handle(_multi_handle, msg->easy_handle);
+					curl_easy_cleanup(msg->easy_handle); // remove after implementing coroutines
 				}
 			}
 			else 
