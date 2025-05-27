@@ -134,7 +134,28 @@ void CurlAsyncExecutor::run()
 		}
 
 	}
-	std::cout << "size: " << _handle_queue.size() << std::endl;
+	// remove any queued requests
+	while (!_handle_queue.empty())
+	{
+		std::cout << "cheaning up queue item" << std::endl;
+		CURL *handle = _handle_queue.front();
+		_handle_queue.pop();
+		curl_easy_cleanup(handle);
+	}
+
+
+	// chean up any current requests
+	CURL **easy_handles = curl_multi_get_handles(_multi_handle);
+	
+	while (*easy_handles)
+	{
+		std::cout << "cheaning up ongoing request" << std::endl;
+		curl_multi_remove_handle(_multi_handle, *easy_handles);
+		curl_easy_cleanup(*easy_handles);
+		easy_handles++;
+	}
+	curl_free(easy_handles);
+
 	std::cout << "thread closing" << std::endl;
 }
 
