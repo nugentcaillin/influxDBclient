@@ -3,6 +3,7 @@
 #include "influxdbclient/networking/task.hpp"
 #include "influxdbclient/networking/curl_awaitable.hpp"
 #include "curl_global_initializer.hpp"
+#include "influxdbclient/networking/http_response.hpp"
 #include <curl/curl.h>
 #include <iostream>
 
@@ -21,11 +22,11 @@ LibcurlHttpClient::LibcurlHttpClient()
 
 HttpResponse LibcurlHttpClient::post(const std::string& url, const std::string& body, const std::map<std::string, std::string>)
 {
-	return {0, "", {}};
+	return {};
 }
 HttpResponse LibcurlHttpClient::get(const std::string& url, const std::string& body, const std::map<std::string, std::string>)
 {
-	return {0, "", {}};
+	return {};
 }
 
 
@@ -38,9 +39,10 @@ LibcurlHttpClient::test
 	CURL* easy_handle = curl_easy_init();
 	curl_easy_setopt(easy_handle, CURLOPT_URL, url.c_str());
 	std::cout << "suspending for first time" << std::endl;
-	int res = co_await CurlAsyncExecutor::getInstance().queueRequest(easy_handle);
+	HttpResponse res = co_await CurlAsyncExecutor::getInstance().queueRequest(easy_handle);
 
-	std::cout << "resuming main coroutine, val: " << res << std::endl;
+	std::cout << "resuming main coroutine with status " << res.status << std::endl;
+	std::cout << res.body << std::endl;
 }
 
 

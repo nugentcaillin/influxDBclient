@@ -4,19 +4,13 @@
 
 #include <string>
 #include <map>
+#include "influxdbclient/networking/http_response.hpp"
 
 namespace influxdbclient
 {
 namespace networking
 {
 
-
-
-struct HttpResponse {
-	int status;
-	std::string body;
-	std::map<std::string, std::string> headers;
-};
 
 
 

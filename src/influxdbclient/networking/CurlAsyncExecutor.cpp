@@ -10,6 +10,7 @@
 #include <coroutine>
 #include <map>
 #include <stdexcept>
+#include <string>
 
 
 namespace influxdbclient
@@ -57,6 +58,10 @@ CurlAsyncExecutor::registerRequest
 		std::lock_guard<std::mutex> lock(_mutex);
 		// insert into map, giving map ownership of RS
 		auto [it, inserted] = _requests_map.emplace(rs.easy_handle, std::move(rs));
+		
+		// make curl write response to RequestState
+		curl_easy_setopt(it->second.easy_handle, CURLOPT_WRITEFUNCTION, CurlAsyncExecutor::writeCallback);
+		curl_easy_setopt(it->second.easy_handle, CURLOPT_WRITEDATA, (void *) &(it->second.body));
 
 		if (!inserted)
 		{
@@ -135,19 +140,15 @@ void CurlAsyncExecutor::run()
 			if (msg->msg == CURLMSG_DONE)
 			{
 				total_msgs--;
-				if (msg->data.result == CURLE_OK)
-				{
-					long response_code;
-					curl_easy_getinfo(msg->easy_handle, CURLINFO_RESPONSE_CODE, &response_code);
-					std::cout << "transfer done with code: " << response_code << std::endl;
-
-
-				} else 
-				{
-					std::cout << "transfer completed with error: " << curl_easy_strerror(msg->data.result) << std::endl;
-				}
-
+				
 				auto res = _requests_map.find(msg->easy_handle); 
+				
+				//add curlcode and status to response
+
+				long response_code;
+				auto code = curl_easy_getinfo(msg->easy_handle, CURLINFO_RESPONSE_CODE, &response_code);
+				if (code == CURLE_OK) res->second.http_status_code = response_code;
+				res->second.curl_code = msg->data.result;
 
 				curl_multi_remove_handle(_multi_handle, msg->easy_handle);
 
@@ -198,6 +199,13 @@ CurlAsyncExecutor& CurlAsyncExecutor::getInstance()
 {
 	static CurlAsyncExecutor instance;
 	return instance;
+}
+
+size_t
+CurlAsyncExecutor::writeCallback(char *contents, size_t size, size_t nmemb, void *userdata)
+{
+	((std::string *) userdata)->append(contents, size * nmemb);
+	return size * nmemb;
 }
 
 }

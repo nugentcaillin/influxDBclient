@@ -3,6 +3,7 @@
 
 #include <curl/curl.h>
 #include "influxdbclient/networking/curl_async_executor.hpp"
+#include "influxdbclient/networking/http_response.hpp"
 #include <coroutine>
 
 namespace influxdbclient
@@ -35,7 +36,7 @@ public:
 	( std::coroutine_handle<> h
 	);
 
-	int 
+	HttpResponse
 	await_resume
 	();
 private:

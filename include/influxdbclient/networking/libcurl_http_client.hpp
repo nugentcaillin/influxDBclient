@@ -4,6 +4,7 @@
 #include "influxdbclient/networking/i_http_client.hpp"
 #include "influxdbclient/networking/task.hpp"
 #include "influxdbclient/networking/curl_async_executor.hpp"
+#include "influxdbclient/networking/http_response.hpp"
 #include <string>
 #include <map>
 

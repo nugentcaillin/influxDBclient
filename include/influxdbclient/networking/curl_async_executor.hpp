@@ -8,6 +8,7 @@
 #include <queue>
 #include <coroutine>
 #include <map>
+#include <string>
 
 
 namespace influxdbclient
@@ -28,10 +29,13 @@ public:
 		std::coroutine_handle<> awaiting_coroutine;
 		long http_status_code = 0;
 		CURLcode curl_code = CURLE_OK;
+		std::string body;
 	};
 
 	CurlAwaitable queueRequest(CURL *easy_handle);
 	RequestState *registerRequest(RequestState rs);
+
+	static size_t writeCallback(char *contents, size_t size, size_t nmemb, void *userdata);
 
 
 private:
