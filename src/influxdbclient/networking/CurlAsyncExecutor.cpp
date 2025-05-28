@@ -1,3 +1,4 @@
+#include "influxdbclient/networking/curl_awaitable.hpp"
 #include "influxdbclient/networking/curl_async_executor.hpp"
 #include "curl_global_initializer.hpp"
 #include <curl/curl.h>
@@ -6,6 +7,9 @@
 #include <mutex>
 #include <chrono>
 #include <condition_variable>
+#include <coroutine>
+#include <map>
+#include <stdexcept>
 
 
 namespace influxdbclient
@@ -38,15 +42,36 @@ CurlAsyncExecutor::~CurlAsyncExecutor()
 
 }
 
-void CurlAsyncExecutor::submit_handle(CURL *handle)
+CurlAwaitable CurlAsyncExecutor::queueRequest(CURL *easy_handle) {
+	return CurlAwaitable(easy_handle, *this);
+}
+
+// we need the executor to own the request state for libcurl to write
+CurlAsyncExecutor::RequestState *
+CurlAsyncExecutor::registerRequest
+( RequestState rs
+)
 {
-	std::cout << "submitting handle" << std::endl;
+	RequestState *ret;
 	{
-		std::unique_lock<std::mutex> lock(_mutex);
-		_handle_queue.push(handle);
+		std::lock_guard<std::mutex> lock(_mutex);
+		// insert into map, giving map ownership of RS
+		auto [it, inserted] = _requests_map.emplace(rs.easy_handle, std::move(rs));
+
+		if (!inserted)
+		{
+			std::runtime_error("handle already registered");
+		}
+
+		// now add handle to queue
+
+		_handle_queue.push(it->second.easy_handle);
+		ret = &(it->second);
 	}
 	_action_cv.notify_one();
+	return ret;
 }
+
 
 void CurlAsyncExecutor::run()
 {
@@ -116,16 +141,24 @@ void CurlAsyncExecutor::run()
 					curl_easy_getinfo(msg->easy_handle, CURLINFO_RESPONSE_CODE, &response_code);
 					std::cout << "transfer done with code: " << response_code << std::endl;
 
-					// look up easy handle in map, pass to worker thread
 
-					curl_multi_remove_handle(_multi_handle, msg->easy_handle);
-					curl_easy_cleanup(msg->easy_handle); // remove after implementing coroutines
 				} else 
 				{
 					std::cout << "transfer completed with error: " << curl_easy_strerror(msg->data.result) << std::endl;
-					curl_multi_remove_handle(_multi_handle, msg->easy_handle);
-					curl_easy_cleanup(msg->easy_handle); // remove after implementing coroutines
 				}
+
+				auto res = _requests_map.find(msg->easy_handle); 
+
+				curl_multi_remove_handle(_multi_handle, msg->easy_handle);
+
+				std::cout << "about to resume" << std::endl;
+
+				res->second.awaiting_coroutine.resume();
+				
+				_requests_map.erase(res);
+
+				// before adding processing thread, safe to remove from map here
+
 			}
 			else 
 			{
@@ -145,6 +178,7 @@ void CurlAsyncExecutor::run()
 
 
 	// chean up any current requests
+	/*
 	CURL **easy_handles = curl_multi_get_handles(_multi_handle);
 	
 	while (*easy_handles)
@@ -155,6 +189,7 @@ void CurlAsyncExecutor::run()
 		easy_handles++;
 	}
 	curl_free(easy_handles);
+	*/
 
 	std::cout << "thread closing" << std::endl;
 }

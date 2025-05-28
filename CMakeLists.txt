@@ -21,6 +21,7 @@ target_sources(${PROJECT_NAME}
 		src/influxdbclient/networking/curl_global_initializer.cpp
 		src/influxdbclient/networking/LibcurlHttpClient.cpp
 		src/influxdbclient/networking/CurlAsyncExecutor.cpp
+		src/influxdbclient/networking/CurlAwaitable.cpp;
 )
 
 
@@ -30,6 +31,9 @@ set_target_properties(influx_db_client
 	CMAKE_CXX_STANDARD 20
 	CMAKE_CXX_STANDARD_REQUIRED ON
 )
+
+target_compile_options(influx_db_client PUBLIC -fcoroutines)
+
 
 target_link_libraries(influx_db_client 
 	PUBLIC 
