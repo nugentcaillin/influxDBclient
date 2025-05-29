@@ -4,7 +4,9 @@
 
 #include <string>
 #include <map>
+#include "influxdbclient/networking/http_request.hpp"
 #include "influxdbclient/networking/http_response.hpp"
+#include "influxdbclient/networking/task.hpp"
 
 namespace influxdbclient
 {
@@ -18,8 +20,8 @@ class IHttpClient
 {
 public:
 	virtual ~IHttpClient() = default;
-	virtual HttpResponse post(const std::string& url, const std::string& body, const std::map<std::string, std::string>) = 0;
-	virtual HttpResponse get(const std::string& url, const std::string& body, const std::map<std::string, std::string>) = 0;
+
+	virtual Task<HttpResponse> performAsync(HttpRequest& request);
 };
 
 }

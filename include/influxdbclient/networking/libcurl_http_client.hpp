@@ -5,6 +5,7 @@
 #include "influxdbclient/networking/task.hpp"
 #include "influxdbclient/networking/curl_async_executor.hpp"
 #include "influxdbclient/networking/http_response.hpp"
+#include "influxdbclient/networking/http_request.hpp"
 #include <string>
 #include <map>
 
@@ -21,10 +22,7 @@ public:
 	~LibcurlHttpClient() override;
 	LibcurlHttpClient();
 
-	HttpResponse post(const std::string& url, const std::string& body, const std::map<std::string, std::string>) override;
-	HttpResponse get(const std::string& url, const std::string& body, const std::map<std::string, std::string>) override;
-	Task<void> test(std::string url);
-	Task<HttpResponse> getAsync(const std::string& url, const std::map<std::string, std::string>& headers);
+	Task<HttpResponse> performAsync(HttpRequest &request);
 };
 
 
