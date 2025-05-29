@@ -21,7 +21,8 @@ target_sources(${PROJECT_NAME}
 		src/influxdbclient/networking/curl_global_initializer.cpp
 		src/influxdbclient/networking/LibcurlHttpClient.cpp
 		src/influxdbclient/networking/CurlAsyncExecutor.cpp
-		src/influxdbclient/networking/CurlAwaitable.cpp;
+		src/influxdbclient/networking/CurlAwaitable.cpp
+		src/influxdbclient/networking/HttpRequest.cpp
 )
 
 
