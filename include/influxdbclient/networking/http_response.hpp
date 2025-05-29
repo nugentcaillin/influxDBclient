@@ -12,7 +12,7 @@ namespace networking
 struct HttpResponse
 {
 	std::string body;
-	int status;
+	long http_status;
 	CURLcode curl_code;
 };
 

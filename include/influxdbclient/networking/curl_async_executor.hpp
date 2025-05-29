@@ -17,23 +17,17 @@ namespace networking
 {
 
 
-class CurlAwaitable;
+struct RequestState;
 
 class CurlAsyncExecutor
 {
+
 public:
 	static CurlAsyncExecutor& getInstance();	
+		
 	
-	struct RequestState {
-		CURL *easy_handle;
-		std::coroutine_handle<> awaiting_coroutine;
-		long http_status_code = 0;
-		CURLcode curl_code = CURLE_OK;
-		std::string body;
-	};
-
-	CurlAwaitable queueRequest(CURL *easy_handle);
-	RequestState *registerRequest(RequestState rs);
+	void
+	queueRequest(std::unique_ptr<RequestState> rs);
 
 	static size_t writeCallback(char *contents, size_t size, size_t nmemb, void *userdata);
 
@@ -45,7 +39,7 @@ private:
 	CURLM *_multi_handle;
 	std::condition_variable _action_cv;
 	std::queue<CURL *> _handle_queue;
-	std::map<CURL *, RequestState> _requests_map;
+	std::map<CURL *, std::unique_ptr<RequestState>> _requests_map;
 
 	CurlAsyncExecutor();
 	~CurlAsyncExecutor();

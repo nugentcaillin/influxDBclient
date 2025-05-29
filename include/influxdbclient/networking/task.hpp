@@ -4,6 +4,7 @@
 
 #include <coroutine>
 #include <exception>
+#include <iostream>
 
 namespace influxdbclient
 {
@@ -33,7 +34,9 @@ public:
 		}
 
 		void return_value(T value_) { value = value_; }
-		void unhandled_exception() { exception_ptr = std::current_exception(); }
+		void unhandled_exception() { 
+			exception_ptr = std::current_exception(); 
+		}
 	};
 
 
@@ -53,12 +56,17 @@ public:
 	void await_suspend(std::coroutine_handle<> continuation_) {
 		_handle.promise().continuation = continuation_; 
 	}
-	void await_resume() {
+	T await_resume() {
 
 		if (_handle.promise().exception_ptr) {
 			std::rethrow_exception(_handle.promise().exception_ptr);
 		}
 		return _handle.promise().value;
+	}
+
+	T get() {
+		if (_handle && !_handle.done()) _handle.resume();
+		return await_resume();
 	}
 
 	std::coroutine_handle<promise_type> _handle;

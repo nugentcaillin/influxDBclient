@@ -14,6 +14,7 @@ namespace networking
 
 
 enum class HttpMethod {
+	_UNSET = 0,
 	GET,
 	POST
 };
@@ -24,7 +25,7 @@ private:
 	std::string _url;
 	std::string _body;
 	std::map<std::string, std::string> _headers;
-	HttpMethod _method;
+	HttpMethod _method = HttpMethod::_UNSET;
 public:
 	
 	const std::string& getUrl() const { return _url; }

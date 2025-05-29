@@ -21,7 +21,7 @@ class IHttpClient
 public:
 	virtual ~IHttpClient() = default;
 
-	virtual Task<HttpResponse> performAsync(HttpRequest& request);
+	virtual Task<HttpResponse> performAsync(HttpRequest& request) = 0;
 };
 
 }

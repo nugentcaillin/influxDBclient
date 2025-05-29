@@ -5,6 +5,7 @@
 #include <coroutine>
 #include <iostream>
 #include <stdexcept>
+#include "RequestState.hpp"
 
 
 namespace influxdbclient
@@ -17,33 +18,17 @@ CurlAwaitable::await_suspend
 ( std::coroutine_handle<> h
 )
 {
-	std::cout << "suspending curlawaitable" << std::endl;
-	CurlAsyncExecutor::RequestState rs;
-	rs.easy_handle = _easy_handle;
-	rs.awaiting_coroutine = h;
-
-	_state_ptr = _executor.registerRequest(std::move(rs));
-	
+	if (!_rs_ptr) throw std::runtime_error("null requeststate pointer");
+	_rs_ptr->awaiting_coroutine = h;
+	CurlAsyncExecutor::getInstance().queueRequest(std::move(_rs_ptr));
 }
 
 HttpResponse
 CurlAwaitable::await_resume
 ()
 {
-	std::cout << "resuming curlawaitable" << std::endl;
-	if (!_state_ptr)
-	{
-		throw std::runtime_error("state pointer is null");
-	}
-
-	
-	HttpResponse response;
-	response.body = std::move(_state_ptr->body);
-	response.status = _state_ptr->http_status_code;
-	response.curl_code = _state_ptr->curl_code;
-
-	curl_easy_cleanup(_state_ptr->easy_handle);
-	return response;
+	std::cout << "future done" << std::endl;
+	return _future.get();
 }
 
 }

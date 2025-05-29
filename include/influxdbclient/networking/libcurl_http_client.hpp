@@ -6,6 +6,8 @@
 #include "influxdbclient/networking/curl_async_executor.hpp"
 #include "influxdbclient/networking/http_response.hpp"
 #include "influxdbclient/networking/http_request.hpp"
+#include "curl/curl.h"
+#include "slist_unique_ptr.hpp"
 #include <string>
 #include <map>
 
@@ -23,6 +25,9 @@ public:
 	LibcurlHttpClient();
 
 	Task<HttpResponse> performAsync(HttpRequest &request);
+private:
+	UniqueCurlSlist buildHeaderSlist(const std::map<std::string, std::string>& headers);
+
 };
 
 

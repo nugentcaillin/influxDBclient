@@ -11,6 +11,8 @@
 #include <map>
 #include <stdexcept>
 #include <string>
+#include "slist_unique_ptr.hpp"
+#include "RequestState.hpp"
 
 
 namespace influxdbclient
@@ -42,39 +44,21 @@ CurlAsyncExecutor::~CurlAsyncExecutor()
 	std::cout << "curl_multi_cleanup called" << std::endl; 
 
 }
-
-CurlAwaitable CurlAsyncExecutor::queueRequest(CURL *easy_handle) {
-	return CurlAwaitable(easy_handle, *this);
-}
-
-// we need the executor to own the request state for libcurl to write
-CurlAsyncExecutor::RequestState *
-CurlAsyncExecutor::registerRequest
-( RequestState rs
-)
-{
-	RequestState *ret;
+void
+CurlAsyncExecutor::queueRequest(std::unique_ptr<RequestState> rs) {
 	{
 		std::lock_guard<std::mutex> lock(_mutex);
-		// insert into map, giving map ownership of RS
-		auto [it, inserted] = _requests_map.emplace(rs.easy_handle, std::move(rs));
 		
-		// make curl write response to RequestState
-		curl_easy_setopt(it->second.easy_handle, CURLOPT_WRITEFUNCTION, CurlAsyncExecutor::writeCallback);
-		curl_easy_setopt(it->second.easy_handle, CURLOPT_WRITEDATA, (void *) &(it->second.body));
+		// set libcurl callbacks
+		curl_easy_setopt(rs->easy_handle, CURLOPT_WRITEFUNCTION, CurlAsyncExecutor::writeCallback);
+		curl_easy_setopt(rs->easy_handle, CURLOPT_WRITEDATA, (void *) &(rs->body));
 
-		if (!inserted)
-		{
-			std::runtime_error("handle already registered");
-		}
-
-		// now add handle to queue
-
-		_handle_queue.push(it->second.easy_handle);
-		ret = &(it->second);
+		// place in map, and queue request
+		_handle_queue.push(rs->easy_handle);
+		_requests_map.emplace(rs->easy_handle, std::move(rs));
+		
 	}
 	_action_cv.notify_one();
-	return ret;
 }
 
 
@@ -139,26 +123,56 @@ void CurlAsyncExecutor::run()
 		{
 			if (msg->msg == CURLMSG_DONE)
 			{
+				std::cout << "message is finished" << std::endl;
 				total_msgs--;
-				
-				auto res = _requests_map.find(msg->easy_handle); 
+				std::unique_ptr<RequestState> completed_rs;
+				{
+					std::lock_guard<std::mutex> lock(_mutex);
+					auto it = _requests_map.find(msg->easy_handle);
+					if (it != _requests_map.end())
+					{
+						completed_rs = std::move(it->second);
+						_requests_map.erase(it);
+						curl_multi_remove_handle(_multi_handle, completed_rs->easy_handle);
+					} else 
+					{
+						throw std::runtime_error("request not found in map");
+					}
+				}
+
+
+
+
 				
 				//add curlcode and status to response
+				long http_status = 0;
+				auto code = curl_easy_getinfo(msg->easy_handle, CURLINFO_RESPONSE_CODE, &http_status);
+				if (code == CURLE_OK) completed_rs->http_status = http_status;
 
-				long response_code;
-				auto code = curl_easy_getinfo(msg->easy_handle, CURLINFO_RESPONSE_CODE, &response_code);
-				if (code == CURLE_OK) res->second.http_status_code = response_code;
-				res->second.curl_code = msg->data.result;
+				completed_rs->http_status = http_status;
+				completed_rs->curl_code = code;
 
-				curl_multi_remove_handle(_multi_handle, msg->easy_handle);
+				try {
+					if (completed_rs->curl_code == CURLE_OK) {
+						HttpResponse response;
+						response.body = std::move(completed_rs->body);
+						response.http_status = completed_rs->http_status;
+						response.curl_code = completed_rs->curl_code;
+						std::cout << "resuming promise" << std::endl;
 
-				std::cout << "about to resume" << std::endl;
-
-				res->second.awaiting_coroutine.resume();
-				
-				_requests_map.erase(res);
-
-				// before adding processing thread, safe to remove from map here
+						completed_rs->promise.set_value(std::move(response));
+					} else {
+						std::cout << "error encountered in request" << std::endl;
+						std::string err_str = "CURL error: ";
+						err_str += curl_easy_strerror(completed_rs->curl_code);
+						completed_rs->promise.set_exception(std::make_exception_ptr(std::runtime_error(err_str)));
+					}
+				} catch (...)
+				{
+					std::cout << "caught exception in promise" << std::endl;
+					completed_rs->promise.set_exception(std::current_exception());
+				}
+				completed_rs->awaiting_coroutine.resume();
 
 			}
 			else 

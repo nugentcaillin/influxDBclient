@@ -2,26 +2,27 @@
 #define _CURL_AWAITABLE_H_
 
 #include <curl/curl.h>
-#include "influxdbclient/networking/curl_async_executor.hpp"
 #include "influxdbclient/networking/http_response.hpp"
 #include <coroutine>
+#include <future>
+#include "RequestState.hpp"
 
 namespace influxdbclient
 {
 namespace networking
 {
 
+//struct RequestState;
 
 class CurlAwaitable {
 public:
 
 	
 	CurlAwaitable
-	( CURL* handle
-	, CurlAsyncExecutor& exec
-	)
-	: _easy_handle(handle)
-	, _executor(exec)
+	( std::shared_future<HttpResponse> future
+	, std::unique_ptr<RequestState> rs_ptr)
+	: _future(std::move(future))
+	, _rs_ptr(std::move(rs_ptr))
 	{}
 
 	bool
@@ -40,10 +41,8 @@ public:
 	await_resume
 	();
 private:
-	CURL *_easy_handle;
-	CurlAsyncExecutor& _executor;
-	CurlAsyncExecutor::RequestState *_state_ptr;
-
+	std::shared_future<HttpResponse> _future;
+	std::unique_ptr<RequestState> _rs_ptr;
 };
 
 }

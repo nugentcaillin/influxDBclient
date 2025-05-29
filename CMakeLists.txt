@@ -19,9 +19,9 @@ target_sources(${PROJECT_NAME}
 	PRIVATE
 		src/influxdbclient/client/InfluxDBClient.cpp
 		src/influxdbclient/networking/curl_global_initializer.cpp
-		src/influxdbclient/networking/LibcurlHttpClient.cpp
 		src/influxdbclient/networking/CurlAsyncExecutor.cpp
 		src/influxdbclient/networking/CurlAwaitable.cpp
+		src/influxdbclient/networking/LibcurlHttpClient.cpp
 		src/influxdbclient/networking/HttpRequest.cpp
 )
 
@@ -46,6 +46,10 @@ target_include_directories(${PROJECT_NAME}
 	PUBLIC
 	"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
 	"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+	"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/influxdbclient/networking>"
+	"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/influxdbclient/networking_internals>"
+
+		
 )
 
 
@@ -63,6 +67,9 @@ install(TARGETS influx_db_client
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/influxdbclient" 
 	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/influxdbclient")
 
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/influxdbclient/networking"
+	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/influxdbclient/networking_internals"
+	FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
 
 
 install(EXPORT influx_db_client_targets
