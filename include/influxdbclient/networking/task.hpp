@@ -5,6 +5,8 @@
 #include <coroutine>
 #include <exception>
 #include <iostream>
+#include <future>
+#include <utility>
 
 namespace influxdbclient
 {
@@ -14,10 +16,25 @@ namespace networking
 template<typename T>
 class Task {
 public:
+	Task(const Task&) = delete;
+	Task& operator=(const Task&) = delete;
+	Task(Task&& other) noexcept : _handle(std::exchange(other._handle, nullptr)) {}
+	Task& operator=(Task&& other) noexcept {
+		if (this != &other) {
+			if (_handle) {
+				_handle.destroy();
+			}
+			_handle = std::exchange(other._handle, nullptr);
+		}
+		return *this;
+	}
+
+
 	struct promise_type {
 		T value;
 		std::exception_ptr exception_ptr;
 		std::coroutine_handle<> continuation;
+		std::promise<T> promise;
 
 		Task<T> get_return_object() {
 			return Task<T>(std::coroutine_handle<promise_type>::from_promise(*this));
@@ -33,9 +50,13 @@ public:
 			return {};
 		}
 
-		void return_value(T value_) { value = value_; }
+		void return_value(T value_) { 
+			value = value_; 
+			promise.set_value(value_);
+		}
 		void unhandled_exception() { 
 			exception_ptr = std::current_exception(); 
+			promise.set_exception(exception_ptr);
 		}
 	};
 
@@ -45,9 +66,6 @@ public:
 	~Task() {
 		if (_handle)
 		{
-			if (!_handle.done()) {
-				_handle.resume();
-			}
 			_handle.destroy();
 		}
 	}
@@ -55,6 +73,7 @@ public:
 	bool await_ready() { return !_handle || _handle.done(); }
 	void await_suspend(std::coroutine_handle<> continuation_) {
 		_handle.promise().continuation = continuation_; 
+		_handle.resume();
 	}
 	T await_resume() {
 
@@ -64,9 +83,8 @@ public:
 		return _handle.promise().value;
 	}
 
-	T get() {
-		if (_handle && !_handle.done()) _handle.resume();
-		return await_resume();
+	std::future<T> get() {
+		return _handle.promise().promise.get_future();
 	}
 
 	std::coroutine_handle<promise_type> _handle;
@@ -77,6 +95,26 @@ public:
 template<>
 class Task<void> {
 public:
+
+	Task(const Task&) = delete;
+	Task& operator=(const Task&) = delete;
+	
+	Task(Task&& other) noexcept : _handle(std::exchange(other._handle, nullptr)) {}
+	Task& operator=(Task&& other) noexcept {
+		if (this != &other) {
+			if (_handle) {
+				_handle.destroy();
+			}
+			_handle = std::exchange(other._handle, nullptr);
+		}
+		return *this;
+	}
+
+	~Task()
+	{
+		if (_handle) _handle.destroy();
+	}
+
 	struct promise_type {
 		std::exception_ptr exception_ptr;
 		std::coroutine_handle<> continuation;
@@ -102,19 +140,11 @@ public:
 
 	Task(std::coroutine_handle<promise_type> h) : _handle(h) {}
 
-	~Task() {
-		if (_handle)
-		{
-			if (!_handle.done()) {
-				_handle.resume();
-			}
-			_handle.destroy();
-		}
-	}
 
 	bool await_ready() { return !_handle || _handle.done(); }
 	void await_suspend(std::coroutine_handle<> continuation_) {
-		_handle.promise().continuation = continuation_; 
+		_handle.promise().continuation = continuation_;
+		_handle.resume();
 	}
 	void await_resume() {
 

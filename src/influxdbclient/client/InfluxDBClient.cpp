@@ -1,4 +1,10 @@
 #include "influxdbclient/client/InfluxDBClient.hpp"
+#include "influxdbclient/networking/i_http_client.hpp"
+#include "influxdbclient/networking/task.hpp"
+#include "influxdbclient/networking/http_request.hpp"
+#include "influxdbclient/networking/http_response.hpp"
+#include <coroutine>
+#include <iostream>
 namespace influxdbclient
 {
 namespace client
@@ -25,13 +31,14 @@ InfluxDBClient::InfluxDBClient
 , const std::string& org
 , const std::string& token
 , int batch_size
-, std::shared_ptr<spdlog::logger> logger
-)
+, const std::shared_ptr<spdlog::logger> logger
+, const std::shared_ptr<influxdbclient::networking::IHttpClient> httpClient)
 : _url(url)
 , _token(token)
 , _org(org)
 , _batch_size(batch_size)
 , _logger(std::move(logger))
+, _httpClient(httpClient)
 {
 	// defensive check for logger, warn user and initialise as global or null sink logger
 	if (_logger.get() == nullptr)
@@ -47,40 +54,48 @@ InfluxDBClient::InfluxDBClient
 		_batch_size = 5000;
 	}
 
+	
+	// blocking until health check OK
+	
+	influxdbclient::networking::Task<int> health = getHealth();
+	health._handle.resume();
+	auto health_future = health.get();
+	health_future.wait();
+	int status = health_future.get();
+	if (status != 200)
+	{
+		std::string err = "Health check failed with status: ";
+		err += std::to_string(status);
+		_logger->error(err);
+		throw std::runtime_error(err);
+	}
+	_logger->info("Health check OK");
 	_logger->info("Influx db client initialised with batch size of {}", _batch_size);
-
-
+	
 }
 
+influxdbclient::networking::Task<int>
+InfluxDBClient::getHealth
+()
+{
+	influxdbclient::networking::HttpRequest req;
+	req.setMethod(influxdbclient::networking::HttpMethod::GET);
+	std::string url = _url;
+	url += "/health";
+	req.setUrl(url);
+	std::string auth = "Bearer ";
+	auth += _token;
+	req.addHeader("Authorization", auth);
+	
+	std::cout << "making health req" << std::endl;
 
-// no provided logger
-InfluxDBClient::InfluxDBClient
-( const std::string& url
-, const std::string& org
-, const std::string& token
-, int batch_size
-)
-: InfluxDBClient(url, token, org, batch_size, getOrCreateGlobalLogger())
-{}
+	//influxdbclient::networking::Task<influxdbclient::networking::>
 
-// no provided batch size
-InfluxDBClient::InfluxDBClient
-( const std::string& url
-, const std::string& org
-, const std::string& token
-, std::shared_ptr<spdlog::logger> logger
-)
-: InfluxDBClient(url, token, org, 5000, logger)
-{}
+	influxdbclient::networking::HttpResponse res = co_await _httpClient->performAsync(req);
 
-// no provided logger or batch size
-InfluxDBClient::InfluxDBClient
-( const std::string& url
-, const std::string& org
-, const std::string& token
-)
-: InfluxDBClient(url, token, org, 5000, getOrCreateGlobalLogger())
-{}
+	std::cout << "finished health req" << std::endl;
+	co_return res.http_status;
+}
 
 }
 
