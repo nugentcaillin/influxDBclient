@@ -11,8 +11,10 @@
 #include <spdlog/sinks/null_sink.h>
 #include "influxdbclient/networking/i_http_client.hpp"
 #include "influxdbclient/networking/task.hpp"
+#include "influxdbclient/networking/http_request.hpp"
 #include <coroutine>
 #include <memory>
+#include <vector>
 
 namespace influxdbclient
 {
@@ -30,6 +32,8 @@ private:
 	int _batch_size;
 	std::shared_ptr<spdlog::logger> _logger;
 	std::shared_ptr<influxdbclient::networking::IHttpClient> _httpClient;
+	
+	influxdbclient::networking::HttpRequest createBasicRequest();
 
 public:
 	/**
@@ -49,7 +53,24 @@ public:
 	, std::shared_ptr<spdlog::logger> logger
 	, const std::shared_ptr<influxdbclient::networking::IHttpClient> httpClient);
 	
+	// cache data 
+	
+	// database
+	
+	influxdbclient::networking::Task<std::vector<std::string>> listDatabases();
+	
+	// processing engine
+	
+	// server information
 	influxdbclient::networking::Task<int> getHealth();
+
+	// table
+	
+	// token
+	
+	// query data
+	
+	// write data 
 	
 };
 

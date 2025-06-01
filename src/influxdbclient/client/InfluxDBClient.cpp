@@ -3,6 +3,7 @@
 #include "influxdbclient/networking/task.hpp"
 #include "influxdbclient/networking/http_request.hpp"
 #include "influxdbclient/networking/http_response.hpp"
+#include <nlohmann/json.hpp>
 #include <coroutine>
 #include <iostream>
 namespace influxdbclient
@@ -23,7 +24,18 @@ getOrCreateGlobalLogger()
 	return logger;
 }
 
+influxdbclient::networking::HttpRequest
+InfluxDBClient::createBasicRequest()
+{
+	influxdbclient::networking::HttpRequest req;
+	
+	req.setUrl(_url);
 
+	std::string auth = "Bearer ";
+	auth += _token;
+	req.addHeader("Authorization", auth);
+	return req;
+}
 
 
 InfluxDBClient::InfluxDBClient
@@ -78,14 +90,10 @@ influxdbclient::networking::Task<int>
 InfluxDBClient::getHealth
 ()
 {
-	influxdbclient::networking::HttpRequest req;
+	influxdbclient::networking::HttpRequest req = createBasicRequest();
+	req.appendToUrl("/health");
 	req.setMethod(influxdbclient::networking::HttpMethod::GET);
-	std::string url = _url;
-	url += "/health";
-	req.setUrl(url);
-	std::string auth = "Bearer ";
-	auth += _token;
-	req.addHeader("Authorization", auth);
+
 	
 	std::cout << "making health req" << std::endl;
 
@@ -96,6 +104,47 @@ InfluxDBClient::getHealth
 	std::cout << "finished health req" << std::endl;
 	co_return res.http_status;
 }
+
+
+influxdbclient::networking::Task<std::vector<std::string>> 
+InfluxDBClient::listDatabases
+()
+{
+	influxdbclient::networking::HttpRequest req = createBasicRequest();
+	req.setMethod(influxdbclient::networking::HttpMethod::GET);
+	req.appendToUrl("/api/v3/configure/database?format=json");
+
+	
+	influxdbclient::networking::HttpResponse res = co_await _httpClient->performAsync(req);
+	
+	if (res.http_status == 400) {
+		throw std::runtime_error("Bad request");
+	}
+	if (res.http_status == 401) {
+		throw std::runtime_error("Unauthorized access");
+	}
+	if (res.http_status == 404) {
+		throw std::runtime_error("Database not found");
+	}
+	_logger->info("list database");
+
+	nlohmann::json data = nlohmann::json::parse(res.body);	
+	std::vector<std::string> ret;
+
+	// get string names out of json object
+	if (data.is_array()) {
+		for (auto& el: data.items()) {
+			if (el.value().contains("iox::database")) ret.push_back(*(el.value().find("iox::database")));
+		}
+	}
+	
+
+	co_return ret;
+}
+
+
+
+
 
 }
 

@@ -12,6 +12,7 @@ include(GNUInstallDirs)
 
 find_package(spdlog CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 add_library(${PROJECT_NAME} STATIC)
 
@@ -40,6 +41,8 @@ target_link_libraries(influx_db_client
 	PUBLIC 
 		spdlog::spdlog
 		CURL::libcurl
+	PRIVATE
+		nlohmann_json::nlohmann_json
 )
 
 target_include_directories(${PROJECT_NAME}

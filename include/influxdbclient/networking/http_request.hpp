@@ -34,6 +34,7 @@ public:
 	HttpMethod getMethod() const { return _method; }
 
 	void setUrl(std::string url);
+	void appendToUrl(std::string append_str);
 	void setBody(std::string body);
 	void addHeader(std::string key, std::string value);
 	void setMethod(HttpMethod method);

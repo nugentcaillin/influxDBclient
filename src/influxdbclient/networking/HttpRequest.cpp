@@ -13,6 +13,12 @@ HttpRequest::setUrl
 {
 	_url = std::move(url);
 }
+void
+HttpRequest::appendToUrl
+(std::string append_str)
+{
+	_url += append_str;
+}
 
 void
 HttpRequest::setBody
