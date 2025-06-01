@@ -118,6 +118,7 @@ public:
 	struct promise_type {
 		std::exception_ptr exception_ptr;
 		std::coroutine_handle<> continuation;
+		std::promise<void> promise;
 
 		Task<void> get_return_object() {
 			return Task<void>(std::coroutine_handle<promise_type>::from_promise(*this));
@@ -133,8 +134,11 @@ public:
 			return {};
 		}
 
-		void return_void() {}
-		void unhandled_exception() { exception_ptr = std::current_exception(); }
+		void return_void() { promise.set_value(); }
+		void unhandled_exception() { 
+			exception_ptr = std::current_exception();
+			promise.set_exception(exception_ptr);
+		}
 	};
 
 
@@ -147,10 +151,14 @@ public:
 		_handle.resume();
 	}
 	void await_resume() {
-
 		if (_handle.promise().exception_ptr) {
 			std::rethrow_exception(_handle.promise().exception_ptr);
 		}
+	}
+
+
+	std::future<void> get() {
+		return _handle.promise().promise.get_future();
 	}
 
 	std::coroutine_handle<promise_type> _handle;

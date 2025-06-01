@@ -58,6 +58,7 @@ public:
 	// database
 	
 	influxdbclient::networking::Task<std::vector<std::string>> listDatabases();
+	influxdbclient::networking::Task<void> createDatabase(std::string name);
 	
 	// processing engine
 	

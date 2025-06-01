@@ -143,6 +143,40 @@ InfluxDBClient::listDatabases
 }
 
 
+influxdbclient::networking::Task<void> 
+InfluxDBClient::createDatabase
+( std::string name)
+{
+	influxdbclient::networking::HttpRequest req = createBasicRequest();
+	req.setMethod(influxdbclient::networking::HttpMethod::POST);
+	req.appendToUrl("/api/v3/configure/database");
+	req.addHeader("Content-Type", "application/json");
+
+	nlohmann::json data;
+	data.emplace("db", name);
+
+	req.setBody(data.dump());
+
+
+	influxdbclient::networking::HttpResponse res = co_await _httpClient->performAsync(req);
+
+	
+	if (res.http_status == 400 ) {
+		throw std::runtime_error("Bad request");
+	}
+	if (res.http_status == 401) {
+		throw std::runtime_error("Unauthorized access");
+	}
+	if (res.http_status == 409) {
+		throw std::runtime_error("Database already exists");
+	}
+
+	_logger->info("created database {}", name);
+
+
+	co_return;
+}
+
 
 
 
