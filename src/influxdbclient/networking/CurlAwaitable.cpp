@@ -27,7 +27,6 @@ HttpResponse
 CurlAwaitable::await_resume
 ()
 {
-	std::cout << "future done" << std::endl;
 	return _future.get();
 }
 

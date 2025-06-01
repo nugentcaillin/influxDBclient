@@ -95,13 +95,11 @@ InfluxDBClient::getHealth
 	req.setMethod(influxdbclient::networking::HttpMethod::GET);
 
 	
-	std::cout << "making health req" << std::endl;
 
 	//influxdbclient::networking::Task<influxdbclient::networking::>
 
 	influxdbclient::networking::HttpResponse res = co_await _httpClient->performAsync(req);
 
-	std::cout << "finished health req" << std::endl;
 	co_return res.http_status;
 }
 

@@ -28,10 +28,8 @@ static CurlGlobalInitializer curlGlobalInitializer;
 CurlAsyncExecutor::CurlAsyncExecutor()
 {
 	_multi_handle = curl_multi_init();	
-	std::cout << "curl_multi_init called" << std::endl; 
 	_running = true;
 	_io_thread = std::thread(&CurlAsyncExecutor::run, this);
-	std::cout << "thread started" << std::endl;
 }
 
 CurlAsyncExecutor::~CurlAsyncExecutor()
@@ -41,7 +39,6 @@ CurlAsyncExecutor::~CurlAsyncExecutor()
 	if (_io_thread.joinable()) _io_thread.join();
 	curl_multi_cleanup(_multi_handle);
 	_multi_handle = nullptr;
-	std::cout << "curl_multi_cleanup called" << std::endl; 
 
 }
 void
@@ -64,7 +61,6 @@ CurlAsyncExecutor::queueRequest(std::unique_ptr<RequestState> rs) {
 
 void CurlAsyncExecutor::run()
 {
-	std::cout << "Event loop started, size: " << _handle_queue.size() << std::endl;
 	int still_running;
 	int msgs_in_queue;
 	int total_msgs = 0;
@@ -88,7 +84,6 @@ void CurlAsyncExecutor::run()
 				timeout = std::chrono::minutes(10); // not using std::chrono::milliseconds::max due to overflow
 			}
 
-			std::cout << "blocking until requests queued, requests done or not running with timeout of: " << timeout.count() << " and " << total_msgs << "messages" << std::endl;
 			std::unique_lock<std::mutex> lock(_mutex);
 			// if no requests pending, wait until new request or interrupt
 			_action_cv.wait_for(lock, timeout, [this] {
@@ -97,7 +92,6 @@ void CurlAsyncExecutor::run()
 
 			if (!_running) break;
 
-			if (!_handle_queue.empty()) std::cout << "handling queue items" << std::endl;
 			
 
 			// add new handles
@@ -109,21 +103,17 @@ void CurlAsyncExecutor::run()
 				total_msgs++;
 			}
 		}
-		std::cout << "done blocking, dealing with transfers" << std::endl;
 
 		// perform transfers
 		mc = curl_multi_perform(_multi_handle, &still_running);
-		if (mc != CURLM_OK)
-		{
-			std::cout << "error in curl_multi_perform(): " << curl_multi_strerror(mc) << std::endl;
-		}
+
+		// add error check here
 
 		// deal with completed transfers
 		while (msg = curl_multi_info_read(_multi_handle, &msgs_in_queue))
 		{
 			if (msg->msg == CURLMSG_DONE)
 			{
-				std::cout << "message is finished" << std::endl;
 				total_msgs--;
 				std::unique_ptr<RequestState> completed_rs;
 				{
@@ -158,26 +148,19 @@ void CurlAsyncExecutor::run()
 						response.body = std::move(completed_rs->body);
 						response.http_status = completed_rs->http_status;
 						response.curl_code = completed_rs->curl_code;
-						std::cout << "resuming promise" << std::endl;
 
 						completed_rs->promise.set_value(std::move(response));
 					} else {
-						std::cout << "error encountered in request" << std::endl;
 						std::string err_str = "CURL error: ";
 						err_str += curl_easy_strerror(completed_rs->curl_code);
 						completed_rs->promise.set_exception(std::make_exception_ptr(std::runtime_error(err_str)));
 					}
 				} catch (...)
 				{
-					std::cout << "caught exception in promise" << std::endl;
 					completed_rs->promise.set_exception(std::current_exception());
 				}
 				completed_rs->awaiting_coroutine.resume();
 
-			}
-			else 
-			{
-				std::cout << "other event on message" << std::endl;
 			}
 		}
 
@@ -185,7 +168,6 @@ void CurlAsyncExecutor::run()
 	// remove any queued requests
 	while (!_handle_queue.empty())
 	{
-		std::cout << "cheaning up queue item" << std::endl;
 		CURL *handle = _handle_queue.front();
 		_handle_queue.pop();
 		curl_easy_cleanup(handle);
@@ -198,7 +180,6 @@ void CurlAsyncExecutor::run()
 	
 	while (*easy_handles)
 	{
-		std::cout << "cheaning up ongoing request" << std::endl;
 		curl_multi_remove_handle(_multi_handle, *easy_handles);
 		curl_easy_cleanup(*easy_handles);
 		easy_handles++;
@@ -206,7 +187,6 @@ void CurlAsyncExecutor::run()
 	curl_free(easy_handles);
 	*/
 
-	std::cout << "thread closing" << std::endl;
 }
 
 CurlAsyncExecutor& CurlAsyncExecutor::getInstance()

@@ -56,8 +56,6 @@ LibcurlHttpClient::performAsync
 {
 
 
-	std::cout << "creating request" << std::endl;
-	std::cout << "checking fields" << std::endl;
 	// ensure necessary fields present
 	if (request.getMethod() == HttpMethod::_UNSET)
 	{
@@ -68,7 +66,6 @@ LibcurlHttpClient::performAsync
 		throw std::runtime_error("no URL supplied");
 	}
 	
-	std::cout << "creating handle" << std::endl;
 
 	CURL *easy_handle = curl_easy_init();
 	
@@ -112,7 +109,6 @@ LibcurlHttpClient::performAsync
 	std::shared_future<HttpResponse> future = rs->promise.get_future();
 
 	
-	std::cout << "handing off request" << std::endl;
 
 	// queue our request
 
