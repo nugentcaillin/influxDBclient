@@ -19,7 +19,7 @@ class Task {
 public:
 	Task(const Task&) = delete;
 	Task& operator=(const Task&) = delete;
-	Task(Task&& other) noexcept : _handle(std::exchange(other._handle, nullptr)), 
+	Task(Task&& other) noexcept : _handle(std::exchange(other._handle, nullptr)),
 								_future(std::move(other._future)) {}
 	Task& operator=(Task&& other) noexcept {
 		if (this != &other) {
@@ -43,12 +43,19 @@ public:
 
 		std::suspend_always initial_suspend() {return {};}
 
-		std::suspend_always final_suspend() noexcept { 
-			if (continuation)
-			{
-				continuation.resume();
-			}
-			return {};
+		auto final_suspend() noexcept { 
+			struct Cleanup {
+				bool await_ready() noexcept { return false; }
+				void await_suspend(std::coroutine_handle<promise_type> h) noexcept {
+					if (h.promise().continuation)
+					{
+						h.promise().continuation.resume();
+					}
+					h.destroy();
+				}
+				void await_resume() noexcept {};
+			};
+			return Cleanup{};
 		}
 
 		void return_value(T value_) { 
@@ -75,7 +82,8 @@ public:
 		return std::move(_future.get());
 	}
 
-	Task(std::coroutine_handle<promise_type> h) : _handle(h) {
+	Task(std::coroutine_handle<promise_type> h) : _handle(h)
+	{
 		if (_handle)
 		{
 			_future = _handle.promise().final_promise.get_future();
@@ -84,10 +92,6 @@ public:
 
 	~Task() {
 		std::cout << "Task destructor" << std::endl;
-		if (_handle)
-		{
-			_handle.destroy();
-		}
 	}
 
 	bool await_ready() { return !_handle || _handle.done(); }
@@ -130,7 +134,6 @@ public:
 
 	~Task()
 	{
-		if (_handle) _handle.destroy();
 	}
 
 	struct promise_type {
@@ -143,12 +146,19 @@ public:
 
 		std::suspend_always initial_suspend() {return {};}
 
-		std::suspend_always final_suspend() noexcept { 
-			if (continuation)
-			{
-				continuation.resume();
-			}
-			return {};
+		auto final_suspend() noexcept { 
+			struct Cleanup {
+				bool await_ready() noexcept { return false; }
+				void await_suspend(std::coroutine_handle<promise_type> h) noexcept {
+					if (h.promise().continuation)
+					{
+						h.promise().continuation.resume();
+					}
+					h.destroy();
+				}
+				void await_resume() noexcept {};
+			};
+			return Cleanup{};
 		}
 
 		void return_void() { final_promise.set_value(); }

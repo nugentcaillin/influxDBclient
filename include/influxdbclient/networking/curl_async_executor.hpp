@@ -24,15 +24,15 @@ class CurlAsyncExecutor
 
 public:
 	struct ActiveRequest {
-		std::unique_ptr<RequestState> rs;
-		std::function<void(std::unique_ptr<RequestState> rs_result)> completion_callback;
+		RequestState rs;
+		std::function<void(HttpResponse response)> completion_callback;
 		std::coroutine_handle<> continuation;
 	};
 	static CurlAsyncExecutor& getInstance();	
 		
 	
 	void
-	queueRequest(std::unique_ptr<RequestState> rs, std::function<void(std::unique_ptr<RequestState> rs_result)>, std::coroutine_handle<> continuation);
+	queueRequest(HttpRequest& request, std::function<void(HttpResponse response)>, std::coroutine_handle<> continuation);
 
 	static size_t writeCallback(char *contents, size_t size, size_t nmemb, void *userdata);
 
@@ -49,6 +49,7 @@ private:
 	CurlAsyncExecutor();
 	~CurlAsyncExecutor();
 	void run();
+	UniqueCurlSlist buildHeaderSlist(const std::map<std::string, std::string>& headers);
 
 };
 

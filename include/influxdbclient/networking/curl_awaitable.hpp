@@ -3,6 +3,7 @@
 
 #include <curl/curl.h>
 #include "influxdbclient/networking/http_response.hpp"
+#include "influxdbclient/networking/http_request.hpp"
 #include <coroutine>
 #include <future>
 #include "RequestState.hpp"
@@ -19,8 +20,8 @@ public:
 
 	
 	CurlAwaitable
-	(std::unique_ptr<RequestState> rs_ptr, std::promise<std::unique_ptr<RequestState>>& promise)
-	: _rs_ptr(std::move(rs_ptr))
+	(HttpRequest& request, std::promise<HttpResponse>& promise)
+	: _request(request)
 	, _promise(promise)
 	{}
 
@@ -39,8 +40,8 @@ public:
 	await_resume
 	();
 private:
-	std::unique_ptr<RequestState> _rs_ptr;
-	std::promise<std::unique_ptr<RequestState>>& _promise;
+	HttpRequest& _request;
+	std::promise<HttpResponse>& _promise;
 };
 
 }

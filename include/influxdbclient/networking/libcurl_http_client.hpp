@@ -25,8 +25,6 @@ public:
 	LibcurlHttpClient();
 
 	Task<HttpResponse> performAsync(HttpRequest &request);
-private:
-	UniqueCurlSlist buildHeaderSlist(const std::map<std::string, std::string>& headers);
 
 };
 

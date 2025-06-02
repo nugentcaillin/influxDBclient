@@ -23,8 +23,17 @@ struct RequestState {
 	UniqueCurlSlist headers;
 
 	~RequestState() {
-		std::cout << "---------------cleaning up curl easy handle--------------" << std::endl;
-		curl_easy_cleanup(easy_handle);
+		std::cout << "requeststate destructor" << std::endl;
+
+		if (easy_handle)
+		{
+			std::cout << "doing cleanup on handle" << std::endl;
+			curl_easy_cleanup(easy_handle);
+		}
+		if (headers)
+		{
+			std::cout << "we have a reference to headers" << std::endl;
+		}
 	}
 	RequestState()
 	: easy_handle(nullptr)

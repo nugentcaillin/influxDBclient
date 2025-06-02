@@ -44,18 +44,61 @@ CurlAsyncExecutor::~CurlAsyncExecutor()
 
 }
 void
-CurlAsyncExecutor::queueRequest(std::unique_ptr<RequestState> rs, std::function<void(std::unique_ptr<RequestState> rs_result)> completion_callback, std::coroutine_handle<> continuation)
+CurlAsyncExecutor::queueRequest(HttpRequest& request, std::function<void(HttpResponse response)> completion_callback, std::coroutine_handle<> continuation)
 {
 	std::cout << "queueing req in CAE" << std::endl;
-	if (!rs->easy_handle) throw std::runtime_error("easy_handle given to queue request is null");
 
 	{
 		std::lock_guard<std::mutex> lock(_mutex);
+		// create handle
+
+
+		CURL *easy_handle = curl_easy_init();
+	
+		if (!easy_handle)
+		{
+			throw std::runtime_error("unable to create CURL handle");
+		}
+
+		// deal with headers
+		UniqueCurlSlist headers = buildHeaderSlist(request.getHeaders());
+		curl_easy_setopt(easy_handle, CURLOPT_HTTPHEADER, headers.get());
+
+		// url
+		curl_easy_setopt(easy_handle, CURLOPT_URL, request.getUrl().c_str());
+
+			
+		// set body
+		if (request.getBody() != "")
+		{
+		curl_easy_setopt(easy_handle, CURLOPT_COPYPOSTFIELDS, request.getBody().c_str());
+		}
 		
-		// set libcurl callbacks
-		curl_easy_setopt(rs->easy_handle, CURLOPT_WRITEFUNCTION, CurlAsyncExecutor::writeCallback);
-		curl_easy_setopt(rs->easy_handle, CURLOPT_WRITEDATA, (void *) &(rs->body));
-		CURL* easy_handle = rs->easy_handle;
+		// deal with request type
+		switch(request.getMethod())
+		{
+			case HttpMethod::GET:
+				curl_easy_setopt(easy_handle, CURLOPT_HTTPGET, 1L);
+				break;
+			case HttpMethod::POST:
+				curl_easy_setopt(easy_handle, CURLOPT_POST, 1L);
+				break;
+			default:
+				throw std::runtime_error("unsupported http method"); // use error callback 
+		}
+
+		
+
+
+
+
+		// construct requestState
+		RequestState rs;
+		rs.easy_handle = easy_handle;
+		rs.headers = std::move(headers);
+		
+		
+
 
 		// place in map, and queue request
 		_handle_queue.push(easy_handle);
@@ -67,8 +110,15 @@ CurlAsyncExecutor::queueRequest(std::unique_ptr<RequestState> rs, std::function<
 
 
 
+
 		std::cout << "emplacing in map" << std::endl;
-		_requests_map.emplace(easy_handle, std::move(ar));
+		auto [it, inserted] = _requests_map.emplace(easy_handle, std::move(ar));
+		if (!inserted) throw std::runtime_error("not inserted into map");
+
+		
+		// set libcurl callbacks
+		curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, CurlAsyncExecutor::writeCallback);
+		curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, (void *) &(it->second.rs.body));
 		
 	}
 	std::cout << "done queueing req in CAE" << std::endl;
@@ -132,32 +182,28 @@ void CurlAsyncExecutor::run()
 			if (msg->msg == CURLMSG_DONE)
 			{
 				total_msgs--;
-				std::unique_ptr<RequestState> completed_rs;
+
+				HttpResponse response("", 0, CURLE_OK);
 				std::coroutine_handle<> continuation;
-				std::function<void(std::unique_ptr<RequestState> completed_rs)> completion_callback;
+				std::function<void(HttpResponse response)> completion_callback;
 				{
 					std::lock_guard<std::mutex> lock(_mutex);
 					auto it = _requests_map.find(msg->easy_handle);
-					if (it != _requests_map.end())
-					{
-						completed_rs = std::move(it->second.rs);
-						completion_callback = it->second.completion_callback;
-						continuation = it->second.continuation;
-						_requests_map.erase(it);
-						curl_multi_remove_handle(_multi_handle, completed_rs->easy_handle);
-					} else 
-					{
-						throw std::runtime_error("request not found in map");
-					}
+					if (it == _requests_map.end()) throw std::runtime_error("request missing from map");
+					response = HttpResponse(
+						std::move(it->second.rs.body),
+						it->second.rs.http_status,
+						msg->data.result
+					);
+					completion_callback = it->second.completion_callback;
+					continuation = it->second.continuation;
+					_requests_map.erase(it);
 				}
 
 				
-				// get these reference before setting promise
-
-				completed_rs->curl_code = msg->data.result;
 				
 				std::cout << "RESUMING COROUTINE" << std::endl;
-				completion_callback(std::move(completed_rs));
+				completion_callback(std::move(response));
 				continuation.resume();
 
 				//completed_rs->awaiting_coroutine.resume();
@@ -202,6 +248,35 @@ CurlAsyncExecutor::writeCallback(char *contents, size_t size, size_t nmemb, void
 	((std::string *) userdata)->append(contents, size * nmemb);
 	return size * nmemb;
 }
+
+
+	
+UniqueCurlSlist
+CurlAsyncExecutor::buildHeaderSlist
+( const std::map<std::string, std::string>& headers)
+{
+	curl_slist *headers_list = nullptr;
+	curl_slist *new_list;
+	for (auto it = headers.begin(); it != headers.end(); it++)
+	{
+		std::string curr;
+		curr += it->first;
+		curr += ": ";
+		curr += it->second;
+	new_list = curl_slist_append(headers_list, curr.c_str());
+		if (!new_list)
+		{
+			if (headers_list) curl_slist_free_all(headers_list);
+			throw std::runtime_error("out of memory assigning header: " + curr);
+		}
+		headers_list = new_list;
+	}
+	return UniqueCurlSlist(headers_list);
+}
+
+
+
+
 
 }
 }
