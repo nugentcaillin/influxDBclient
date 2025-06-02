@@ -7,6 +7,7 @@
 #include <iostream>
 #include <future>
 #include <utility>
+#include <optional>
 
 namespace influxdbclient
 {
@@ -18,23 +19,23 @@ class Task {
 public:
 	Task(const Task&) = delete;
 	Task& operator=(const Task&) = delete;
-	Task(Task&& other) noexcept : _handle(std::exchange(other._handle, nullptr)) {}
+	Task(Task&& other) noexcept : _handle(std::exchange(other._handle, nullptr)), 
+								_future(std::move(other._future)) {}
 	Task& operator=(Task&& other) noexcept {
 		if (this != &other) {
 			if (_handle) {
 				_handle.destroy();
 			}
 			_handle = std::exchange(other._handle, nullptr);
+			_future = std::move(other._future);
 		}
 		return *this;
 	}
 
 
 	struct promise_type {
-		T value;
-		std::exception_ptr exception_ptr;
+		std::promise<T> final_promise;
 		std::coroutine_handle<> continuation;
-		std::promise<T> promise;
 
 		Task<T> get_return_object() {
 			return Task<T>(std::coroutine_handle<promise_type>::from_promise(*this));
@@ -51,19 +52,38 @@ public:
 		}
 
 		void return_value(T value_) { 
-			value = value_; 
-			promise.set_value(value_);
+			final_promise.set_value(std::move(value_)); 
 		}
 		void unhandled_exception() { 
-			exception_ptr = std::current_exception(); 
-			promise.set_exception(exception_ptr);
+			final_promise.set_exception(std::current_exception()); 
 		}
+
 	};
+	
+
+	T get()
+	{
+		if (!_handle)
+		{
+			throw std::runtime_error("no handle");
+		}
+		
+
+		if (!_handle.done()) _handle.resume();
 
 
-	Task(std::coroutine_handle<promise_type> h) : _handle(h) {}
+		return std::move(_future.get());
+	}
+
+	Task(std::coroutine_handle<promise_type> h) : _handle(h) {
+		if (_handle)
+		{
+			_future = _handle.promise().final_promise.get_future();
+		}
+	}
 
 	~Task() {
+		std::cout << "Task destructor" << std::endl;
 		if (_handle)
 		{
 			_handle.destroy();
@@ -76,18 +96,14 @@ public:
 		_handle.resume();
 	}
 	T await_resume() {
-
-		if (_handle.promise().exception_ptr) {
-			std::rethrow_exception(_handle.promise().exception_ptr);
-		}
-		return _handle.promise().value;
+		T result = std::move(_future.get());
+		//if (_handle) _handle.destroy();
+		return std::move(result);
 	}
 
-	std::future<T> get() {
-		return _handle.promise().promise.get_future();
-	}
 
 	std::coroutine_handle<promise_type> _handle;
+	std::future<T> _future;
 
 };
 
@@ -99,13 +115,15 @@ public:
 	Task(const Task&) = delete;
 	Task& operator=(const Task&) = delete;
 	
-	Task(Task&& other) noexcept : _handle(std::exchange(other._handle, nullptr)) {}
+	Task(Task&& other) noexcept : _handle(std::exchange(other._handle, nullptr)),
+								_future(std::move(other._future)) {}
 	Task& operator=(Task&& other) noexcept {
 		if (this != &other) {
 			if (_handle) {
 				_handle.destroy();
 			}
 			_handle = std::exchange(other._handle, nullptr);
+			_future = std::move(other._future);
 		}
 		return *this;
 	}
@@ -116,9 +134,8 @@ public:
 	}
 
 	struct promise_type {
-		std::exception_ptr exception_ptr;
 		std::coroutine_handle<> continuation;
-		std::promise<void> promise;
+		std::promise<void> final_promise;
 
 		Task<void> get_return_object() {
 			return Task<void>(std::coroutine_handle<promise_type>::from_promise(*this));
@@ -134,15 +151,23 @@ public:
 			return {};
 		}
 
-		void return_void() { promise.set_value(); }
+		void return_void() { final_promise.set_value(); }
 		void unhandled_exception() { 
-			exception_ptr = std::current_exception();
-			promise.set_exception(exception_ptr);
+			final_promise.set_exception(std::current_exception());
 		}
 	};
+	
+	void get()
+	{
+		if (!_handle) throw std::runtime_error("no handle");
+		return _future.get();
+	}
 
 
-	Task(std::coroutine_handle<promise_type> h) : _handle(h) {}
+
+	Task(std::coroutine_handle<promise_type> h) : _handle(h) {
+		if (_handle) _future = _handle.promise().final_promise.get_future();
+	}
 
 
 	bool await_ready() { return !_handle || _handle.done(); }
@@ -151,17 +176,13 @@ public:
 		_handle.resume();
 	}
 	void await_resume() {
-		if (_handle.promise().exception_ptr) {
-			std::rethrow_exception(_handle.promise().exception_ptr);
-		}
+		_future.get();
 	}
 
 
-	std::future<void> get() {
-		return _handle.promise().promise.get_future();
-	}
 
 	std::coroutine_handle<promise_type> _handle;
+	std::future<void> _future;
 
 };
 

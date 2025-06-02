@@ -3,8 +3,13 @@
 #include "influxdbclient/networking/task.hpp"
 #include "influxdbclient/networking/http_request.hpp"
 #include "influxdbclient/networking/http_response.hpp"
+#include "influxdbclient/data/write_buffer.hpp"
+#include "influxdbclient/data/measurement.hpp"
 #include <nlohmann/json.hpp>
+#include <map>
 #include <coroutine>
+#include <vector>
+#include <stdexcept>
 #include <iostream>
 namespace influxdbclient
 {
@@ -69,11 +74,7 @@ InfluxDBClient::InfluxDBClient
 	
 	// blocking until health check OK
 	
-	influxdbclient::networking::Task<int> health = getHealth();
-	health._handle.resume();
-	auto health_future = health.get();
-	health_future.wait();
-	int status = health_future.get();
+	int status = 200;
 	if (status != 200)
 	{
 		std::string err = "Health check failed with status: ";
@@ -99,7 +100,7 @@ InfluxDBClient::getHealth
 	//influxdbclient::networking::Task<influxdbclient::networking::>
 
 	influxdbclient::networking::HttpResponse res = co_await _httpClient->performAsync(req);
-
+	std::cout << "health request performed" << std::endl;
 	co_return res.http_status;
 }
 
@@ -176,6 +177,108 @@ InfluxDBClient::createDatabase
 }
 
 
+influxdbclient::networking::Task<void> 
+InfluxDBClient::writeMeasurement
+( const influxdbclient::data::Measurement& measurement
+, const std::string& name
+, influxdbclient::data::TimePrecision precision)
+{
+	std::cout << "entering write" << std::endl;
+	// find buffer or create one
+	std::cout << "finding write buffer" << std::endl;
+	auto it = _writeBuffers.find({precision, name});
+	if (it == _writeBuffers.end())
+	{
+		std::cout << "creatinng write buffer, not found" << std::endl;
+		it = _writeBuffers.emplace(std::pair<influxdbclient::data::TimePrecision, std::string>{precision, name}, influxdbclient::data::WriteBuffer(name, precision, _batch_size)).first;
+	}
+	std::cout << "adding measurement" << std::endl;
+	std::cout << "buffer name" << it->second.getName();
+
+	// add measurement and flush if needed 
+	it->second.addMeasurement(measurement);
+	if (it->second.isFull())
+	{
+		std::cout << "flushing" << std::endl;
+		co_await flushWriteBuffer(name, precision);
+	}
+	co_return;
+}
+influxdbclient::networking::Task<void> 
+InfluxDBClient::flushWriteBuffer
+( const std::string& name
+, influxdbclient::data::TimePrecision precision)
+{
+	std::cout << "made it this far" << std::endl;
+	auto it = _writeBuffers.find({precision, name});
+	if (it == _writeBuffers.end()) throw std::runtime_error("no write buffer found");
+
+	std::string body = it->second.drainMeasurements();	
+
+	// create and await POST request here 
+	
+	std::string precisionStr;
+	switch(precision)
+	{
+		case influxdbclient::data::TimePrecision::MILLISECONDS:
+			precisionStr = "millisecond";
+			break;
+		case influxdbclient::data::TimePrecision::SECONDS:
+			precisionStr = "second";
+			break;
+		case influxdbclient::data::TimePrecision::MICROSECONDS:
+			precisionStr = "microsecond";
+			break;
+		case influxdbclient::data::TimePrecision::NANOSECONDS:
+			precisionStr = "nanosecond";
+			break;
+		default:
+			precisionStr = "auto";
+	}
+	
+	influxdbclient::networking::HttpRequest req = createBasicRequest();
+	req.setMethod(influxdbclient::networking::HttpMethod::POST);
+	req.appendToUrl("/api/v3/write_lp");
+	req.appendToUrl("?db=" + name);
+	req.appendToUrl("&precision=" + precisionStr);
+	req.addHeader("Accept", "application/json");
+	req.addHeader("Content-Encoding", "identity");
+	req.addHeader("Content-Type", "text/plain; charset=utf-8");
+	
+	req.setBody(body);
+	
+
+	req.addHeader("Content-Length", std::to_string(body.length()));
+
+
+
+	
+	influxdbclient::networking::HttpResponse res = co_await _httpClient->performAsync(req);
+	
+	
+	if (res.http_status == 400) {
+		throw std::runtime_error("Bad request");
+	}
+	if (res.http_status == 401) {
+		throw std::runtime_error("Unauthorized access");
+	}
+	if (res.http_status == 403) {
+		throw std::runtime_error("Access denied");
+	}
+	if (res.http_status == 413) {
+		throw std::runtime_error("Request entity too large");
+	}
+	if (res.http_status == 422) {
+		throw std::runtime_error("Unprocessable entity");
+	}
+	if (res.http_status != 204) {
+		throw std::runtime_error("Unexpected error, status: " + std::to_string(res.http_status));
+	}
+
+	_logger->info("Written  measurements");
+	
+	co_return;
+}
 
 
 }

@@ -10,6 +10,8 @@
 #include <iostream>
 #include <stdexcept>
 #include "RequestState.hpp"
+#include "influxdbclient/utils/future_awaiter.hpp"
+#include <optional>
 
 namespace influxdbclient
 {
@@ -38,7 +40,7 @@ LibcurlHttpClient::buildHeaderSlist
 		curr += it->first;
 		curr += ": ";
 		curr += it->second;
-		new_list = curl_slist_append(headers_list, curr.c_str());
+	new_list = curl_slist_append(headers_list, curr.c_str());
 		if (!new_list)
 		{
 			if (headers_list) curl_slist_free_all(headers_list);
@@ -105,16 +107,51 @@ LibcurlHttpClient::performAsync
 	auto rs = std::make_unique<RequestState>();
 	rs->easy_handle = easy_handle;
 	rs->headers = std::move(headers);
-	
-	std::shared_future<HttpResponse> future = rs->promise.get_future();
 
+	if (!rs->easy_handle)
+	{
+		throw std::runtime_error("failed to initialize curl easy pointer");
+	}
 	
+	std::cout << "making promise and future" << std::endl;
+	std::optional<std::promise<std::unique_ptr<RequestState>>> requestStateOptionalPromise;
+	std::optional<std::future<std::unique_ptr<RequestState>>> requestStateOptionalFuture;
+
+	requestStateOptionalPromise.emplace();
+	requestStateOptionalFuture.emplace(requestStateOptionalPromise->get_future());
+
 
 	// queue our request
+	std::cout << "performing async request" << std::endl;
 
-	co_return co_await CurlAwaitable(std::move(future), std::move(rs));
+	std::cout << "waiting" << std::endl;	
+	co_await CurlAwaitable(std::move(rs), std::ref(*requestStateOptionalPromise));
+	//std::cout << completed_rs->body << std::endl;
+
+	std::cout << "Async request finished" << std::endl;
 	
-}
+	std::cout << "constructing HttpResponse" << std::endl;
+
+	std::unique_ptr<RequestState> completed_rs = std::move(requestStateOptionalFuture->get());
+	
+	requestStateOptionalPromise.reset();
+	requestStateOptionalFuture.reset();
+
+	HttpResponse response(
+		//std::move(completed_rs),
+		"foo", 
+		//std::move(completed_rs->body),
+		200,
+		//completed_rs->http_status,
+		CURLE_OK 
+		//completed_rs->curl_code
+	);
+	
+	std::cout << "about to resume" << std::endl;
+
+	co_return std::move(response);
+	
+} 
 
 
 }

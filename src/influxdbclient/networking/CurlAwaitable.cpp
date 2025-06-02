@@ -19,15 +19,21 @@ CurlAwaitable::await_suspend
 )
 {
 	if (!_rs_ptr) throw std::runtime_error("null requeststate pointer");
-	_rs_ptr->awaiting_coroutine = h;
-	CurlAsyncExecutor::getInstance().queueRequest(std::move(_rs_ptr));
+	if (!_rs_ptr->easy_handle) throw std::runtime_error("null easy_handle");
+
+	std::function<void(std::unique_ptr<RequestState> rs_result)> completion_callback = [this](std::unique_ptr<RequestState> rs_result) {
+		this->_promise.set_value(std::move(rs_result));
+
+	};
+	std::cout << "queueing request" << std::endl;
+	CurlAsyncExecutor::getInstance().queueRequest(std::move(_rs_ptr), completion_callback, h);
 }
 
-HttpResponse
+void
 CurlAwaitable::await_resume
 ()
 {
-	return _future.get();
+
 }
 
 }

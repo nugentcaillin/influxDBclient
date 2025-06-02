@@ -19,10 +19,9 @@ public:
 
 	
 	CurlAwaitable
-	( std::shared_future<HttpResponse> future
-	, std::unique_ptr<RequestState> rs_ptr)
-	: _future(std::move(future))
-	, _rs_ptr(std::move(rs_ptr))
+	(std::unique_ptr<RequestState> rs_ptr, std::promise<std::unique_ptr<RequestState>>& promise)
+	: _rs_ptr(std::move(rs_ptr))
+	, _promise(promise)
 	{}
 
 	bool
@@ -36,13 +35,12 @@ public:
 	await_suspend
 	( std::coroutine_handle<> h
 	);
-
-	HttpResponse
+	void
 	await_resume
 	();
 private:
-	std::shared_future<HttpResponse> _future;
 	std::unique_ptr<RequestState> _rs_ptr;
+	std::promise<std::unique_ptr<RequestState>>& _promise;
 };
 
 }

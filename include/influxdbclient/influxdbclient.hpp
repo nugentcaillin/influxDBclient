@@ -9,5 +9,7 @@
 #include "influxdbclient/networking/http_request.hpp"
 #include "influxdbclient/networking/http_response.hpp"
 #include "influxdbclient/networking/task.hpp"
+#include "influxdbclient/data/measurement.hpp"
+#include "influxdbclient/data/write_buffer.hpp"
 
 #endif

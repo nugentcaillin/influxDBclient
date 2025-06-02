@@ -23,11 +23,16 @@ class CurlAsyncExecutor
 {
 
 public:
+	struct ActiveRequest {
+		std::unique_ptr<RequestState> rs;
+		std::function<void(std::unique_ptr<RequestState> rs_result)> completion_callback;
+		std::coroutine_handle<> continuation;
+	};
 	static CurlAsyncExecutor& getInstance();	
 		
 	
 	void
-	queueRequest(std::unique_ptr<RequestState> rs);
+	queueRequest(std::unique_ptr<RequestState> rs, std::function<void(std::unique_ptr<RequestState> rs_result)>, std::coroutine_handle<> continuation);
 
 	static size_t writeCallback(char *contents, size_t size, size_t nmemb, void *userdata);
 
@@ -39,7 +44,7 @@ private:
 	CURLM *_multi_handle;
 	std::condition_variable _action_cv;
 	std::queue<CURL *> _handle_queue;
-	std::map<CURL *, std::unique_ptr<RequestState>> _requests_map;
+	std::map<CURL *, ActiveRequest> _requests_map;
 
 	CurlAsyncExecutor();
 	~CurlAsyncExecutor();

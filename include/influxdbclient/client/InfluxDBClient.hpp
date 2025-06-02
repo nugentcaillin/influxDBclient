@@ -12,9 +12,13 @@
 #include "influxdbclient/networking/i_http_client.hpp"
 #include "influxdbclient/networking/task.hpp"
 #include "influxdbclient/networking/http_request.hpp"
+#include "influxdbclient/data/measurement.hpp"
+#include "influxdbclient/data/write_buffer.hpp"
 #include <coroutine>
 #include <memory>
+#include <map>
 #include <vector>
+#include <utility>
 
 namespace influxdbclient
 {
@@ -32,13 +36,13 @@ private:
 	int _batch_size;
 	std::shared_ptr<spdlog::logger> _logger;
 	std::shared_ptr<influxdbclient::networking::IHttpClient> _httpClient;
+	std::map<std::pair<influxdbclient::data::TimePrecision, std::string>, influxdbclient::data::WriteBuffer> _writeBuffers;
 	
 	influxdbclient::networking::HttpRequest createBasicRequest();
 
 public:
 	/**
 	 * @brief constructs an InfluxDBClient using a specified logger and batch size
-	 *
 	 * @param url the InfluxDB url (e.g. http://localhost:8086)
 	 * @param org the InfluxDB organisation name 
 	 * @param token the InfluxDB API token
@@ -72,6 +76,17 @@ public:
 	// query data
 	
 	// write data 
+	
+	influxdbclient::networking::Task<void> 
+	writeMeasurement
+	( const influxdbclient::data::Measurement& measurement
+	, const std::string& name 
+	, influxdbclient::data::TimePrecision precision);
+
+	influxdbclient::networking::Task<void>
+	flushWriteBuffer
+	( const std::string& name
+	, influxdbclient::data::TimePrecision precision);
 	
 };
 

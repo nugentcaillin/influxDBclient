@@ -3,11 +3,17 @@
 
 #include "slist_unique_ptr.hpp"
 #include <coroutine>
+#include <iostream>
+#include <future>
+#include <utility>
+#include <curl/curl.h>
 
 namespace influxdbclient
 {
 namespace networking
 {
+
+class HttpResponse;
 
 struct RequestState {
 	CURL *easy_handle;
@@ -15,11 +21,46 @@ struct RequestState {
 	CURLcode curl_code = CURLE_OK;
 	std::string body;
 	UniqueCurlSlist headers;
-	std::promise<HttpResponse> promise;
-	std::coroutine_handle<> awaiting_coroutine;
 
 	~RequestState() {
+		std::cout << "---------------cleaning up curl easy handle--------------" << std::endl;
 		curl_easy_cleanup(easy_handle);
+	}
+	RequestState()
+	: easy_handle(nullptr)
+	, http_status(0)
+	, curl_code(CURLE_OK)
+	, body()
+	, headers()
+	{}
+
+
+	// move only due to unique ptrs
+	RequestState(const RequestState&) = delete;
+	RequestState& operator=(const RequestState&) = delete;
+
+	RequestState(RequestState&& other) noexcept
+	: easy_handle(std::exchange(other.easy_handle, nullptr))
+	, http_status(std::exchange(other.http_status, 0))
+	, curl_code(std::exchange(other.curl_code, CURLE_OK))
+	, body(std::move(other.body))
+	, headers(std::move(other.headers))
+	{}
+
+	RequestState& operator=(RequestState&& other)
+	{
+		if (this != &other)
+		{
+			if (easy_handle) {
+				curl_easy_cleanup(easy_handle);
+			}
+			easy_handle = std::exchange(other.easy_handle, nullptr);
+			http_status = std::exchange(other.http_status, 0);
+			curl_code = std::exchange(other.curl_code, CURLE_OK);
+			body = std::move(other.body);
+			headers = std::move(other.headers);
+		}
+		return *this;
 	}
 };
 

@@ -2,6 +2,7 @@
 #define _SLIST_UNIQUE_PTR_H_
 
 #include <curl/curl.h>
+#include <memory>
 
 
 namespace influxdbclient
