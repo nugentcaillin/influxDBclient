@@ -286,6 +286,37 @@ InfluxDBClient::flushWriteBuffer
 }
 
 
+influxdbclient::networking::Task<nlohmann::json>
+InfluxDBClient::querySql
+( const std::string& database
+, const std::string& query
+, const std::map<std::string, std::string> params)
+{
+	influxdbclient::networking::HttpRequest req = createBasicRequest();
+	req.setMethod(influxdbclient::networking::HttpMethod::POST);
+	req.appendToUrl("/api/v3/query_sql");
+	req.addHeader("Content-Type", "application/json");
+	req.addHeader("Accept", "application/json");
+
+	nlohmann::json data;
+	data.emplace("db", database);
+	data.emplace("q", query);
+	
+	for (auto [key, value]: params) {
+		data["params"][key] = value;
+	}
+
+	req.setBody(data.dump());
+
+
+	influxdbclient::networking::HttpResponse res = co_await _httpClient->performAsync(req);
+	nlohmann::json measurements = nlohmann::json::parse(res.body);	
+	_logger->info("queried database {} returning {} measurements", database, measurements.size());
+	
+	co_return measurements;
+}
+
+
 }
 
 }

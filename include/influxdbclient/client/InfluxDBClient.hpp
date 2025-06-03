@@ -19,6 +19,7 @@
 #include <map>
 #include <vector>
 #include <utility>
+#include <nlohmann/json.hpp>
 
 namespace influxdbclient
 {
@@ -74,6 +75,11 @@ public:
 	// token
 	
 	// query data
+	influxdbclient::networking::Task<nlohmann::json>
+	querySql
+	( const std::string& database
+	, const std::string& query
+	, const std::map<std::string, std::string> params);
 	
 	// write data 
 	
