@@ -178,6 +178,13 @@ public:
 		return _future.get();
 	}
 
+	std::future<void> take_future()
+	{
+		if (!_handle.done()) _handle.resume();
+		return std::move(_future);
+		
+	}
+
 
 
 	Task(std::coroutine_handle<promise_type> h) : _handle(h) {
