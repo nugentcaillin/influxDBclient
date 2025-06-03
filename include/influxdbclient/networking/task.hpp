@@ -91,7 +91,6 @@ public:
 	}
 
 	~Task() {
-		std::cout << "Task destructor" << std::endl;
 	}
 
 	bool await_ready() { return !_handle || _handle.done(); }

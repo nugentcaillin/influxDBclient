@@ -44,7 +44,6 @@ LibcurlHttpClient::performAsync
 	}
 	
 	
-	std::cout << "making promise and future" << std::endl;
 	std::optional<std::promise<HttpResponse>> responsePromise;
 	std::optional<std::future<HttpResponse>> responseFuture;
 
@@ -53,15 +52,10 @@ LibcurlHttpClient::performAsync
 
 
 	// queue our request
-	std::cout << "performing async request" << std::endl;
 
-	std::cout << "waiting" << std::endl;	
 	co_await CurlAwaitable(request, std::ref(*responsePromise));
 	//std::cout << completed_rs->body << std::endl;
 
-	std::cout << "Async request finished" << std::endl;
-	
-	std::cout << "constructing HttpResponse" << std::endl;
 
 	
 	HttpResponse response = responseFuture->get();
@@ -69,9 +63,7 @@ LibcurlHttpClient::performAsync
 
 	responsePromise.reset();
 	responseFuture.reset();
-	std::cout << "response.body.data(): " << static_cast<const void*>(response.body.data()) << std::endl;	
 	
-	std::cout << "about to resume" << std::endl;
 	std::string detatchedBody = std::string(response.body);
 
 	co_return HttpResponse(

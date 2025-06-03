@@ -23,7 +23,6 @@ CurlAwaitable::await_suspend
 		this->_promise.set_value(std::move(response));
 
 	};
-	std::cout << "queueing request" << std::endl;
 	CurlAsyncExecutor::getInstance().queueRequest(_request, completion_callback, h);
 }
 

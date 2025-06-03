@@ -38,7 +38,6 @@ CurlAsyncExecutor::~CurlAsyncExecutor()
 	_running = false;
 	_action_cv.notify_one();
 	if (_io_thread.joinable()) _io_thread.join();
-	std::cout << "curl multi cleanup called" << std::endl;
 	curl_multi_cleanup(_multi_handle);
 	_multi_handle = nullptr;
 
@@ -46,7 +45,6 @@ CurlAsyncExecutor::~CurlAsyncExecutor()
 void
 CurlAsyncExecutor::queueRequest(HttpRequest& request, std::function<void(HttpResponse response)> completion_callback, std::coroutine_handle<> continuation)
 {
-	std::cout << "queueing req in CAE" << std::endl;
 
 	{
 		std::lock_guard<std::mutex> lock(_mutex);
@@ -111,7 +109,6 @@ CurlAsyncExecutor::queueRequest(HttpRequest& request, std::function<void(HttpRes
 
 
 
-		std::cout << "emplacing in map" << std::endl;
 		auto [it, inserted] = _requests_map.emplace(easy_handle, std::move(ar));
 		if (!inserted) throw std::runtime_error("not inserted into map");
 
@@ -121,7 +118,6 @@ CurlAsyncExecutor::queueRequest(HttpRequest& request, std::function<void(HttpRes
 		curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, (void *) &(it->second.rs.body));
 		
 	}
-	std::cout << "done queueing req in CAE" << std::endl;
 	_action_cv.notify_one();
 }
 
@@ -213,7 +209,6 @@ void CurlAsyncExecutor::run()
 
 				
 				
-				std::cout << "RESUMING COROUTINE" << std::endl;
 				completion_callback(std::move(response));
 				continuation.resume();
 
@@ -231,20 +226,7 @@ void CurlAsyncExecutor::run()
 		curl_easy_cleanup(handle);
 	}
 
-
-	// chean up any current requests
-	/*
-	CURL **easy_handles = curl_multi_get_handles(_multi_handle);
-	
-	while (*easy_handles)
-	{
-		curl_multi_remove_handle(_multi_handle, *easy_handles);
-		curl_easy_cleanup(*easy_handles);
-		easy_handles++;
-	}
-	curl_free(easy_handles);
-	*/
-
+	// add cleanup of current request for graceful shutdown
 }
 
 CurlAsyncExecutor& CurlAsyncExecutor::getInstance()

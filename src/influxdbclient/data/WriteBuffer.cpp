@@ -30,8 +30,6 @@ void
 WriteBuffer::addMeasurement
 ( const Measurement& measurement)
 {
-	std::cout << "adding measurement" << std::endl;
-	std::cout << measurement.getLineProtocol() << std::endl;
 	_lineProtocolMeasurements += measurement.getLineProtocol();
 	_curr++;
 }
