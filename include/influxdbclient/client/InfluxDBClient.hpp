@@ -57,7 +57,67 @@ public:
 	, int batch_size
 	, std::shared_ptr<spdlog::logger> logger
 	, const std::shared_ptr<influxdbclient::networking::IHttpClient> httpClient);
+
 	
+	// convenience constructors
+
+	// no batch size
+	InfluxDBClient
+	( const std::string& url
+	, const std::string& org
+	, const std::string& token
+	, std::shared_ptr<spdlog::logger> logger
+	, const std::shared_ptr<influxdbclient::networking::IHttpClient> httpClient);
+	
+
+	// no logger
+	InfluxDBClient
+	( const std::string& url
+	, const std::string& org
+	, const std::string& token
+	, int batch_size
+	, const std::shared_ptr<influxdbclient::networking::IHttpClient> httpClient);
+	
+
+	// no httpClient
+	InfluxDBClient
+	( const std::string& url
+	, const std::string& org
+	, const std::string& token
+	, int batch_size
+	, std::shared_ptr<spdlog::logger> logger);	
+
+	
+	// no batch size, logger
+	InfluxDBClient
+	( const std::string& url
+	, const std::string& org
+	, const std::string& token
+	, const std::shared_ptr<influxdbclient::networking::IHttpClient> httpClient);
+	
+	// no batch size, httpclient
+	InfluxDBClient
+	( const std::string& url
+	, const std::string& org
+	, const std::string& token
+	, std::shared_ptr<spdlog::logger> logger);
+	
+	// no logger, httpclient
+	InfluxDBClient
+	( const std::string& url
+	, const std::string& org
+	, const std::string& token
+	, int batch_size);
+	
+	// no logger, batch size, http client
+	InfluxDBClient
+	( const std::string& url
+	, const std::string& org
+	, const std::string& token);
+	
+
+
+
 	// cache data 
 	
 	// database

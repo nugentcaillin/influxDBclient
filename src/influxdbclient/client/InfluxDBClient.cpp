@@ -1,5 +1,6 @@
 #include "influxdbclient/client/InfluxDBClient.hpp"
 #include "influxdbclient/networking/i_http_client.hpp"
+#include "influxdbclient/networking/libcurl_http_client.hpp"
 #include "influxdbclient/networking/task.hpp"
 #include "influxdbclient/networking/http_request.hpp"
 #include "influxdbclient/networking/http_response.hpp"
@@ -87,6 +88,124 @@ InfluxDBClient::InfluxDBClient
 	_logger->info("Influx db client initialised with batch size of {}", _batch_size);
 	
 }
+
+
+// convenience constructors
+// no batch size
+InfluxDBClient::InfluxDBClient
+( const std::string& url
+, const std::string& org
+, const std::string& token
+, std::shared_ptr<spdlog::logger> logger
+, const std::shared_ptr<influxdbclient::networking::IHttpClient> httpClient)
+: InfluxDBClient
+( url
+, org
+, token
+, 500
+, logger
+, httpClient)
+{}
+	
+
+// no logger
+InfluxDBClient::InfluxDBClient
+( const std::string& url
+, const std::string& org
+, const std::string& token
+, int batch_size
+, const std::shared_ptr<influxdbclient::networking::IHttpClient> httpClient)
+: InfluxDBClient
+( url
+, org
+, token
+, batch_size
+, getOrCreateGlobalLogger()
+, httpClient)
+{}
+	
+
+// no httpClient
+InfluxDBClient::InfluxDBClient
+( const std::string& url
+, const std::string& org
+, const std::string& token
+, int batch_size
+, std::shared_ptr<spdlog::logger> logger)	
+: InfluxDBClient
+( url
+, org
+, token
+, batch_size
+, logger
+, std::make_shared<influxdbclient::networking::LibcurlHttpClient>(influxdbclient::networking::LibcurlHttpClient()))
+{}
+
+	
+// no batch size, logger
+InfluxDBClient::InfluxDBClient
+( const std::string& url
+, const std::string& org
+, const std::string& token
+, const std::shared_ptr<influxdbclient::networking::IHttpClient> httpClient)
+: InfluxDBClient
+( url
+, org
+, token
+, 500
+, getOrCreateGlobalLogger()
+, httpClient)
+{}
+	
+// no batch size, httpclient
+InfluxDBClient::InfluxDBClient
+( const std::string& url
+, const std::string& org
+, const std::string& token
+, std::shared_ptr<spdlog::logger> logger)
+: InfluxDBClient
+( url
+, org
+, token
+, 500
+, logger
+, std::make_shared<influxdbclient::networking::LibcurlHttpClient>(influxdbclient::networking::LibcurlHttpClient()))
+{}
+	
+// no logger, httpclient
+InfluxDBClient::InfluxDBClient
+( const std::string& url
+, const std::string& org
+, const std::string& token
+, int batch_size)
+: InfluxDBClient
+( url
+, org
+, token
+, batch_size
+, getOrCreateGlobalLogger()
+, std::make_shared<influxdbclient::networking::LibcurlHttpClient>(influxdbclient::networking::LibcurlHttpClient()))
+{}
+	
+// no logger, batch size, http client
+InfluxDBClient::InfluxDBClient
+( const std::string& url
+, const std::string& org
+, const std::string& token)
+: InfluxDBClient
+( url
+, org
+, token
+, 500
+, getOrCreateGlobalLogger()
+, std::make_shared<influxdbclient::networking::LibcurlHttpClient>(influxdbclient::networking::LibcurlHttpClient()))
+{}
+	
+
+
+
+
+
 
 influxdbclient::networking::Task<int>
 InfluxDBClient::getHealth
