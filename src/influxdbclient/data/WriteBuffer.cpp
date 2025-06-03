@@ -57,14 +57,15 @@ WriteBuffer::getPrecision
 	return _precision;
 }
 
-std::string
+std::pair<std::string, int>
 WriteBuffer::drainMeasurements
 ()
 {
 	std::string drainedMeasurements;
 	drainedMeasurements.swap(_lineProtocolMeasurements);
+	auto pair = std::make_pair(drainedMeasurements, _curr);
 	_curr = 0;
-	return drainedMeasurements;
+	return pair;
 }
 
 

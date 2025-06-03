@@ -213,9 +213,8 @@ InfluxDBClient::flushWriteBuffer
 {
 	std::cout << "made it this far" << std::endl;
 	auto it = _writeBuffers.find({precision, name});
-	if (it == _writeBuffers.end()) throw std::runtime_error("no write buffer found");
 
-	std::string body = it->second.drainMeasurements();	
+	auto drained = it->second.drainMeasurements();	
 
 	// create and await POST request here 
 	
@@ -237,6 +236,14 @@ InfluxDBClient::flushWriteBuffer
 		default:
 			precisionStr = "auto";
 	}
+
+
+	if (it == _writeBuffers.end()) 
+	{
+		_logger->warn("write of empty buffer attempted, name: {}, precision: {}", name, precisionStr);
+		co_return;
+	}
+
 	
 	influxdbclient::networking::HttpRequest req = createBasicRequest();
 	req.setMethod(influxdbclient::networking::HttpMethod::POST);
@@ -246,14 +253,10 @@ InfluxDBClient::flushWriteBuffer
 	req.addHeader("Accept", "application/json");
 	req.addHeader("Content-Encoding", "identity");
 	req.addHeader("Content-Type", "text/plain; charset=utf-8");
+	req.addHeader("Content-Length", std::to_string(drained.first.length()));
 	
-	req.setBody(body);
+	req.setBody(std::move(drained.first));
 	
-
-	req.addHeader("Content-Length", std::to_string(body.length()));
-
-
-
 	
 	influxdbclient::networking::HttpResponse res = co_await _httpClient->performAsync(req);
 	
@@ -277,7 +280,7 @@ InfluxDBClient::flushWriteBuffer
 		throw std::runtime_error("Unexpected error, status: " + std::to_string(res.http_status));
 	}
 
-	_logger->info("Written  measurements");
+	_logger->info("Written {} measurements to {} with precision: {}", drained.second, name, precisionStr);
 	
 	co_return;
 }

@@ -167,9 +167,15 @@ public:
 		}
 	};
 	
+
+	// WARNING - this method is only used to wait synchronously for completion,
+	// only call it from a synchronous context.
+	// This method resumes the handle, which is undefined behaviour if the 
+	// awaiter is past initial_suspend
 	void get()
 	{
 		if (!_handle) throw std::runtime_error("no handle");
+		if (!_handle.done()) _handle.resume();
 		return _future.get();
 	}
 

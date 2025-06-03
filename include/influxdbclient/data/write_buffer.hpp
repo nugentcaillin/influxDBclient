@@ -33,9 +33,12 @@ public:
 	WriteBuffer(const std::string& name, TimePrecision Precision, size_t capacity);
 	void addMeasurement(const Measurement& measurement);
 	bool isFull() const;
+
 	const std::string& getName() const;
 	TimePrecision getPrecision() const;
-	std::string drainMeasurements();
+	std::pair<std::string, int> drainMeasurements();
+
+	size_t getItemCount() { return _curr; }
 };
 
 
