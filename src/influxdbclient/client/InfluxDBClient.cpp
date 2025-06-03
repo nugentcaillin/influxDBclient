@@ -46,14 +46,12 @@ InfluxDBClient::createBasicRequest()
 
 InfluxDBClient::InfluxDBClient
 ( const std::string& url
-, const std::string& org
 , const std::string& token
 , int batch_size
 , const std::shared_ptr<spdlog::logger> logger
 , const std::shared_ptr<influxdbclient::networking::IHttpClient> httpClient)
 : _url(url)
 , _token(token)
-, _org(org)
 , _batch_size(batch_size)
 , _logger(std::move(logger))
 , _httpClient(httpClient)
@@ -94,13 +92,11 @@ InfluxDBClient::InfluxDBClient
 // no batch size
 InfluxDBClient::InfluxDBClient
 ( const std::string& url
-, const std::string& org
 , const std::string& token
 , std::shared_ptr<spdlog::logger> logger
 , const std::shared_ptr<influxdbclient::networking::IHttpClient> httpClient)
 : InfluxDBClient
 ( url
-, org
 , token
 , 500
 , logger
@@ -111,13 +107,11 @@ InfluxDBClient::InfluxDBClient
 // no logger
 InfluxDBClient::InfluxDBClient
 ( const std::string& url
-, const std::string& org
 , const std::string& token
 , int batch_size
 , const std::shared_ptr<influxdbclient::networking::IHttpClient> httpClient)
 : InfluxDBClient
 ( url
-, org
 , token
 , batch_size
 , getOrCreateGlobalLogger()
@@ -128,13 +122,11 @@ InfluxDBClient::InfluxDBClient
 // no httpClient
 InfluxDBClient::InfluxDBClient
 ( const std::string& url
-, const std::string& org
 , const std::string& token
 , int batch_size
 , std::shared_ptr<spdlog::logger> logger)	
 : InfluxDBClient
 ( url
-, org
 , token
 , batch_size
 , logger
@@ -145,12 +137,10 @@ InfluxDBClient::InfluxDBClient
 // no batch size, logger
 InfluxDBClient::InfluxDBClient
 ( const std::string& url
-, const std::string& org
 , const std::string& token
 , const std::shared_ptr<influxdbclient::networking::IHttpClient> httpClient)
 : InfluxDBClient
 ( url
-, org
 , token
 , 500
 , getOrCreateGlobalLogger()
@@ -160,12 +150,10 @@ InfluxDBClient::InfluxDBClient
 // no batch size, httpclient
 InfluxDBClient::InfluxDBClient
 ( const std::string& url
-, const std::string& org
 , const std::string& token
 , std::shared_ptr<spdlog::logger> logger)
 : InfluxDBClient
 ( url
-, org
 , token
 , 500
 , logger
@@ -175,12 +163,10 @@ InfluxDBClient::InfluxDBClient
 // no logger, httpclient
 InfluxDBClient::InfluxDBClient
 ( const std::string& url
-, const std::string& org
 , const std::string& token
 , int batch_size)
 : InfluxDBClient
 ( url
-, org
 , token
 , batch_size
 , getOrCreateGlobalLogger()
@@ -190,11 +176,9 @@ InfluxDBClient::InfluxDBClient
 // no logger, batch size, http client
 InfluxDBClient::InfluxDBClient
 ( const std::string& url
-, const std::string& org
 , const std::string& token)
 : InfluxDBClient
 ( url
-, org
 , token
 , 500
 , getOrCreateGlobalLogger()
