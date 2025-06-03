@@ -163,7 +163,7 @@ void CurlAsyncExecutor::run()
 
 			// add new handles
 			while (!_handle_queue.empty())
-			{
+			{	
 				auto curr = _handle_queue.front();
 				_handle_queue.pop();
 				curl_multi_add_handle(_multi_handle, curr);
@@ -195,6 +195,17 @@ void CurlAsyncExecutor::run()
 						it->second.rs.http_status,
 						msg->data.result
 					);
+						
+					if (response.curl_code != CURLE_OK) throw std::runtime_error(std::string(curl_easy_strerror(response.curl_code)));
+
+					// get status
+
+					long http_status;
+
+					auto cc = curl_easy_getinfo(msg->easy_handle, CURLINFO_RESPONSE_CODE, &http_status);
+					if (cc != CURLE_OK) throw std::runtime_error("could not get status" + std::string(curl_easy_strerror(cc)));
+					response.http_status = http_status;
+
 					completion_callback = it->second.completion_callback;
 					continuation = it->second.continuation;
 					_requests_map.erase(it);

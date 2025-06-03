@@ -73,8 +73,9 @@ InfluxDBClient::InfluxDBClient
 
 	
 	// blocking until health check OK
+	auto health = getHealth();
+	int status = health.get();
 	
-	int status = 200;
 	if (status != 200)
 	{
 		std::string err = "Health check failed with status: ";
@@ -99,7 +100,8 @@ InfluxDBClient::getHealth
 
 	//influxdbclient::networking::Task<influxdbclient::networking::>
 
-	influxdbclient::networking::HttpResponse res = co_await _httpClient->performAsync(req);
+	auto t = _httpClient->performAsync(req);
+	influxdbclient::networking::HttpResponse res = co_await t;
 	std::cout << "health request performed" << std::endl;
 	co_return res.http_status;
 }
